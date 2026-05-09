@@ -1,0 +1,397 @@
+================================================================================
+                           DELIVERABLES INDEX
+              Complete Phase 1 Implementation Guide for Your Project
+================================================================================
+
+PROJECT: Hybrid Quantum-Classical Medicinal Plant Health Detection
+DATASET: Bangladeshi Medicinal Plant Health (Mendeley Data)
+PHASE: Phase 1 - Data Foundation & Leakage-Safe Preprocessing
+DELIVERY: 9 comprehensive documents (184 KB total)
+STATUS: READY FOR IMPLEMENTATION
+
+================================================================================
+                        HOW TO USE THESE FILES
+================================================================================
+
+STEP 1: START HERE
+→ Read: README_START_HERE.md (11 KB)
+  This is your entry point. It explains all 9 files and when to use each.
+
+STEP 2: UNDERSTAND THE STRATEGY
+→ Read: PHASE_1_EXECUTIVE_SUMMARY.md (16 KB)
+  Understand why Phase 1 is critical and what you're building.
+
+STEP 3: PLAN YOUR TIMELINE
+→ Read: PHASE_1_ROADMAP.txt (18 KB)
+  See the day-by-day timeline for the 17-day Phase 1.
+
+STEP 4: VERIFY YOU'RE READY
+→ Check: IMPLEMENTATION_CHECKLIST.md (8.5 KB)
+  Before you start, make sure all requirements are met.
+
+STEP 5: UNDERSTAND THE SYSTEM PROMPT
+→ Review: SYSTEM_PROMPT_FOR_IMPLEMENTATION.md (18 KB)
+  This explains your role and Claude's role. You'll send this to Claude.
+
+STEP 6: GET THE QUICK START
+→ Read: QUICK_START_GUIDE.md (13 KB)
+  Learn how to use Claude effectively with the system prompt.
+
+STEP 7: DETAILED IMPLEMENTATION
+→ Use: Phase_1_Complete_Guide.md (54 KB)
+  This is your main reference with 9 steps, code, and expected outputs.
+
+STEP 8: QUICK COMMANDS
+→ Keep: Phase_1_Quick_Reference.txt (14 KB)
+  Open this while working for quick command lookups.
+
+STEP 9: DELIVERY SUMMARY
+→ Reference: COMPLETE_DELIVERY_SUMMARY.txt (15 KB)
+  Complete overview of everything delivered and what to expect.
+
+================================================================================
+                        FILE DESCRIPTIONS
+================================================================================
+
+1. README_START_HERE.md (11 KB) ⭐ START HERE
+   Entry point with 5-minute quick start. Explains all documents, project
+   overview, directory structure, and success metrics.
+   When: Read first (5 minutes)
+   Use: Navigation guide for all other documents
+
+2. PHASE_1_EXECUTIVE_SUMMARY.md (16 KB)
+   Strategic context for Phase 1. Why it matters, what you're building,
+   critical concepts, acceptance criteria, and risk mitigation.
+   When: Read before implementing (15-20 minutes)
+   Use: Understand the big picture
+
+3. Phase_1_Complete_Guide.md (54 KB) ⭐ MAIN REFERENCE
+   Complete 9-step implementation guide. Includes 5 Python scripts (copy-paste
+   ready), expected outputs, verification procedures, and troubleshooting.
+   When: During implementation
+   Use: Main reference for each step
+
+4. Phase_1_Quick_Reference.txt (14 KB)
+   Copy-paste command sequences organized by week. Quick lookup for common
+   commands and troubleshooting solutions.
+   When: During implementation
+   Use: Quick command reference while working
+
+5. PHASE_1_ROADMAP.txt (18 KB)
+   Day-by-day timeline, dependency graph, critical success factors, and
+   metrics to track. Includes gate approvals and Phase 2 preview.
+   When: During implementation
+   Use: Project tracking and planning
+
+6. SYSTEM_PROMPT_FOR_IMPLEMENTATION.md (18 KB) ⭐ COPY TO CLAUDE
+   System prompt that configures Claude to help with Phase 1. Includes
+   project context, critical constraints, manual steps, and workflows.
+   When: Copy entire contents and paste to Claude in first message
+   Use: Claude configuration for the project
+
+7. QUICK_START_GUIDE.md (13 KB) ⭐ HOW TO USE CLAUDE
+   Guide for using the system prompt with Claude. Includes setup instructions,
+   where to use Claude, sample messages, and troubleshooting.
+   When: Before sending first message to Claude
+   Use: Learn how to interact with Claude effectively
+
+8. IMPLEMENTATION_CHECKLIST.md (8.5 KB) ⭐ FINAL CHECK
+   Final verification before starting. System requirements, understanding
+   checks, manual steps listed, and do-not-start-if list.
+   When: Just before sending first message to Claude
+   Use: Verify you're ready to begin
+
+9. COMPLETE_DELIVERY_SUMMARY.txt (15 KB)
+   Overview of all 9 files, critical manual steps, environment setup,
+   acceptance criteria, and final reminders.
+   When: Reference throughout Phase 1
+   Use: Quick reference for phase completion status
+
+================================================================================
+                        CRITICAL THINGS TO KNOW
+================================================================================
+
+MANUAL STEPS (You Must Do These - Cannot Be Automated):
+
+1. DOWNLOAD DATASET (Day 1)
+   - Go to: https://data.mendeley.com/datasets/23tnz64w5m/1
+   - Download all files, accept license, extract to data/raw/
+   - This cannot be automated (Mendeley requires human interaction)
+
+2. EXAMINE FILENAME PATTERNS (Day 6)
+   - Run: find data/raw -type f -name "*.jpg" | head -20
+   - Show Claude the first 20 filenames
+   - Claude will adjust extraction script based on actual filenames
+
+3. VERIFY LABEL ONTOLOGY (Day 7 - CRITICAL GATE)
+   - Review label_ontology.json output
+   - Confirm all 7 species and all conditions present
+   - Approve or request changes (cannot proceed without approval)
+
+4. SPOT-CHECK PARENT MAPPINGS (Day 8-9)
+   - Review sample parent_leaf_id mappings
+   - Verify augmented images correctly map to originals
+   - Confirm extraction logic is correct
+
+5. VERIFY ZERO LEAKAGE (Day 12 - CRITICAL GATE)
+   - Run verification script 3 times (all must pass)
+   - Confirm zero parent overlap
+   - Required before moving to Phase 2
+
+6. PHASE 1 SIGN-OFF (Day 15 - CRITICAL GATE)
+   - Verify all deliverables present
+   - Confirm all gates passed
+   - Approve Phase 1 as complete
+
+CRITICAL PRINCIPLE:
+Zero parent-image leakage - this is the entire foundation of Phase 1.
+Use parent_leaf_id grouping (not file-level grouping).
+Verify zero leakage 3 times before proceeding to Phase 2.
+
+================================================================================
+                        ENVIRONMENT SETUP REQUIRED
+================================================================================
+
+BEFORE STARTING:
+- Python 3.8 or higher
+- 50+ GB free disk space
+- 8+ GB available RAM
+- Internet connection (for dataset download)
+
+PYTHON PACKAGES (Claude will help install):
+pandas, numpy, pillow, opencv-python, scikit-learn, matplotlib, seaborn,
+tqdm, python-dotenv
+
+VERIFICATION:
+python3 --version
+pip --version
+df -h  (Linux/Mac) or dir /w  (Windows)
+
+================================================================================
+                        YOUR WORKFLOW
+================================================================================
+
+1. Read This File (00_INDEX_START_HERE.txt) - 2 minutes
+   └─ You are here
+
+2. Read README_START_HERE.md - 5 minutes
+   └─ Understand scope and documents
+
+3. Read PHASE_1_EXECUTIVE_SUMMARY.md - 20 minutes
+   └─ Understand strategy and why Phase 1 matters
+
+4. Read IMPLEMENTATION_CHECKLIST.md - 5 minutes
+   └─ Verify you're ready to start
+
+5. Open Claude (Code, Desktop, or Web)
+   └─ Use your preferred Claude interface
+
+6. Copy SYSTEM_PROMPT_FOR_IMPLEMENTATION.md
+   └─ Copy entire contents
+
+7. Send First Message to Claude
+   └─ Paste system prompt + all 4 project guides
+   └─ Include your system info (Python, disk space, OS)
+   └─ Include confirmation of understanding
+
+8. Follow Claude's Guidance
+   └─ Work through 9 steps following Claude's instructions
+   └─ Make gate approvals at Days 7, 9, 12, 15
+   └─ Reference Phase_1_Complete_Guide.md as needed
+
+9. Complete Phase 1 (May 27, 2026)
+   └─ Proceed to Phase 2 (May 28, 2026)
+
+================================================================================
+                        DOCUMENT READING ORDER
+================================================================================
+
+RECOMMENDED ORDER:
+
+For First-Time Understanding:
+1. This file (00_INDEX_START_HERE.txt) - 2 minutes
+2. README_START_HERE.md - 5 minutes
+3. PHASE_1_EXECUTIVE_SUMMARY.md - 20 minutes
+4. PHASE_1_ROADMAP.txt - 10 minutes
+5. IMPLEMENTATION_CHECKLIST.md - 5 minutes
+   Total: 42 minutes to understand everything
+
+Before Sending First Message to Claude:
+6. SYSTEM_PROMPT_FOR_IMPLEMENTATION.md - Review (copy entire)
+7. QUICK_START_GUIDE.md - Review
+
+During Implementation:
+8. Phase_1_Complete_Guide.md - Main reference
+9. Phase_1_Quick_Reference.txt - Quick lookups
+10. COMPLETE_DELIVERY_SUMMARY.txt - Progress tracking
+
+================================================================================
+                        WHAT EACH DOCUMENT GIVES YOU
+================================================================================
+
+README_START_HERE.md:
+  ✓ Understand the project scope
+  ✓ Know when to use each document
+  ✓ Quick start in 5 minutes
+  ✓ Document index and descriptions
+  ✓ Critical decision points
+  ✓ Common mistakes to avoid
+
+PHASE_1_EXECUTIVE_SUMMARY.md:
+  ✓ Why Phase 1 is critical
+  ✓ Strategic context
+  ✓ All objectives and deliverables
+  ✓ Acceptance criteria
+  ✓ Key technical decisions
+  ✓ Risk mitigation strategies
+
+Phase_1_Complete_Guide.md:
+  ✓ 9 detailed implementation steps
+  ✓ 5 complete Python scripts (copy-paste ready)
+  ✓ Expected outputs for each step
+  ✓ Gate criteria and verification procedures
+  ✓ Troubleshooting guide
+  ✓ Timeline and contingency planning
+
+Phase_1_Quick_Reference.txt:
+  ✓ Copy-paste command sequences
+  ✓ Week-by-week breakdown
+  ✓ Gate checks
+  ✓ Common troubleshooting solutions
+  ✓ Time estimates
+
+PHASE_1_ROADMAP.txt:
+  ✓ Day-by-day timeline
+  ✓ Dependency graph
+  ✓ Critical success factors
+  ✓ Metrics to track
+  ✓ Phase 2 readiness checklist
+
+SYSTEM_PROMPT_FOR_IMPLEMENTATION.md:
+  ✓ System prompt for Claude
+  ✓ Project context
+  ✓ Claude's role and your role
+  ✓ Critical constraints
+  ✓ Manual steps listed
+  ✓ Workflow and expected outputs
+
+QUICK_START_GUIDE.md:
+  ✓ How to use the system prompt
+  ✓ Claude platform recommendations
+  ✓ 5-minute quick start
+  ✓ Sample messages
+  ✓ Common issues and fixes
+  ✓ Success indicators
+
+IMPLEMENTATION_CHECKLIST.md:
+  ✓ System requirements verification
+  ✓ Files ready check
+  ✓ Understanding check
+  ✓ Commitment check
+  ✓ Manual steps listed
+  ✓ Do-not-start-if list
+
+COMPLETE_DELIVERY_SUMMARY.txt:
+  ✓ Complete overview
+  ✓ All 9 files described
+  ✓ Critical manual steps
+  ✓ Environment setup
+  ✓ Success metrics
+  ✓ Final reminders
+
+================================================================================
+                        QUICK ANSWERS
+================================================================================
+
+Q: What's the most important thing in Phase 1?
+A: Zero parent-image leakage. This prevents augmented images from crossing
+   train/test boundaries. Verified 3 times before Phase 2.
+
+Q: When do I send the system prompt to Claude?
+A: After reading this file, README_START_HERE.md, and the checklist.
+   You'll copy the entire SYSTEM_PROMPT_FOR_IMPLEMENTATION.md in your
+   first message.
+
+Q: What are the critical gates?
+A: Day 7 (freeze label ontology), Day 9 (verify manifest), Day 12 (verify
+   zero leakage 3x), Day 15 (approve Phase 1 complete). All require your
+   explicit approval.
+
+Q: Can I skip any steps?
+A: No. The foundation depends on all steps. Every step builds on the previous.
+
+Q: What if I find issues?
+A: Stop, document the issue, and ask Claude for help. The troubleshooting
+   guides are included in the documents.
+
+Q: How long will Phase 1 take?
+A: 17 days (May 4-27, 2026) with 1-2 hours per day. Includes buffer days
+   for troubleshooting.
+
+Q: What's the dataset?
+A: 1,981 original + 20,019 augmented images of 7 medicinal plants from
+   Bangladesh. License: CC BY 4.0. Source: Mendeley Data.
+
+Q: Can Claude automate the dataset download?
+A: No, Mendeley requires human acceptance of terms. You must download
+   manually.
+
+Q: What if something breaks?
+A: Use the troubleshooting guides in the documents. All common issues have
+   solutions. Claude can help debug specific problems.
+
+================================================================================
+                        NEXT STEPS
+================================================================================
+
+IMMEDIATE:
+1. Read this file (00_INDEX_START_HERE.txt)
+2. Read README_START_HERE.md
+3. Verify system requirements met
+
+TODAY:
+4. Read PHASE_1_EXECUTIVE_SUMMARY.md
+5. Read IMPLEMENTATION_CHECKLIST.md
+6. Prepare your system
+
+TOMORROW:
+7. Copy SYSTEM_PROMPT_FOR_IMPLEMENTATION.md
+8. Open Claude (Code, Desktop, or Web)
+9. Send first message with system prompt + documents
+10. Follow Claude's guidance for Step 1
+
+================================================================================
+                        TIMELINE
+================================================================================
+
+May 4-27, 2026: Phase 1 (17 days)
+  - Days 1-5: Dataset audit
+  - Days 6-7: Metadata extraction (Gate 1: Freeze ontology)
+  - Days 8-9: Manifest building (Gate 2: Verify integrity)
+  - Days 11-13: Split creation (Gate 3: Zero leakage verified 3x)
+  - Days 14-17: Finalization (Gate 4: Phase 1 sign-off)
+
+May 28 - June 9, 2026: Phase 2 (Baselines)
+May 28 onward: Depends on Phase 1 completion
+
+================================================================================
+                        YOU'RE READY!
+================================================================================
+
+You now have everything needed to complete Phase 1:
+
+✓ 9 comprehensive documents (184 KB)
+✓ 5 complete Python scripts (copy-paste ready)
+✓ System prompt for Claude (configure assistant)
+✓ Day-by-day timeline (17 days)
+✓ All manual steps identified (6 total)
+✓ Environment setup checklist
+✓ Gate approval criteria
+✓ Troubleshooting guides
+✓ Success metrics and acceptance criteria
+
+Next Action: Read README_START_HERE.md (5 minutes)
+
+Good luck! You're about to build a rock-solid Phase 1 foundation! 🚀
+
+================================================================================
