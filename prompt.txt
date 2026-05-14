@@ -1,0 +1,1131 @@
+================================================================================
+QMEDLEAFNET PROJECT PIPELINE - COMPREHENSIVE BUILD PROMPT
+================================================================================
+
+PROJECT OVERVIEW
+================================================================================
+
+NAME: QMedLeafNet - A Hybrid Quantum-Classical Neural Network for Medicinal Plant Health Detection
+PURPOSE: Build a parameter-efficient deep learning system that combines classical and quantum machine learning to classify medicinal plant leaf health conditions
+GOAL: Detect 9 health conditions across 7 medicinal plant species with high accuracy using minimal model parameters
+
+PROJECT SCOPE
+================================================================================
+
+INPUT: Raw medicinal plant leaf images (1440x1080 resolution, background-removed)
+PROCESSING: Multi-phase pipeline for data validation, feature extraction, and model training
+OUTPUT: Classification predictions for 63 plant condition-species combinations (9 conditions × 7 species)
+
+CURRENT STATUS: Phase 2 (Classical Baseline Training) - 85% complete
+COMPLETION TARGET: Phase 3 (Quantum Integration) - Not started
+
+
+================================================================================
+PHASE 1: DATA FOUNDATION AND PREPARATION
+================================================================================
+
+PHASE 1 OBJECTIVE:
+Create a robust, audited dataset with zero data leakage for safe model development
+
+PHASE 1 DELIVERABLES:
+
+1.1 DATA COLLECTION
+  - Total images required: 25,962
+  - Composition: 1,981 original images + 23,981 augmented images
+  - Augmentation methods: Rotation (90°, 180°, 270°) and horizontal/vertical flipping
+  - Resolution: 1440×1080 pixels in JPG/PNG format
+  - Preprocessing: All images must have background removed for focus on leaf morphology
+
+1.2 SPECIES INVENTORY (7 species total)
+  Species 1: Aloe Vera
+    - Varieties: Multiple cultivars
+  Species 2: Azadirachta Indica (Neem Tree)
+    - Varieties: Common neem
+  Species 3: Centella Asiatica (Gotu Kola)
+    - Varieties: Pennywort
+  Species 4: Hibiscus Rosa Sinensis
+    - Varieties: Chinese Hibiscus
+  Species 5: Kalanchoe Pinnata
+    - Varieties: Air Plant
+  Species 6: Mikania Micrantha
+    - Varieties: Chinese Vine
+  Species 7: Piper Betle (Betel Leaf)
+    - Varieties: Common betel
+
+1.3 HEALTH CONDITIONS INVENTORY (9 conditions total)
+  Condition 1: Healthy
+    - Definition: Normal leaf morphology, no visible disease or stress
+  Condition 2: Disease
+    - Definition: Fungal, bacterial, or viral infection present
+  Condition 3: Chlorotic
+    - Definition: Yellowing of leaves due to chlorophyll deficiency or mineral deficiency
+  Condition 4: Insects
+    - Definition: Pest damage or insect infestation visible
+  Condition 5: Mild Disease
+    - Definition: Early-stage disease with minimal progression
+  Condition 6: Dried
+    - Definition: Leaf desiccation or extreme water stress
+  Condition 7: Young Healthy
+    - Definition: Newly developed healthy leaf in growth phase
+  Condition 8: Mature Healthy
+    - Definition: Fully developed healthy leaf in prime condition
+  Condition 9: Distorted
+    - Definition: Abnormal leaf shape or growth pattern
+
+1.4 DATA SPLIT STRATEGY
+  Total unique plant parents: 1,981 plants
+  Test set: 307 unique parents (4,032 files) - Never used for training or validation
+  Development set: 1,674 unique parents (21,930 files) - Used for 5-fold cross-validation
+  Zero-leakage rule: No parent plant can appear in multiple folds
+  Fold distribution: Each of 5 folds contains different parent plants
+  Train/validation per fold: Approximately 80% train (1,344 files), 20% validation (417 files)
+
+1.5 MASTER MANIFEST FILE STRUCTURE
+  File: manifests/master_manifest.csv
+  Columns required:
+    - file_path: Path to image file relative to data/raw/
+    - species: Species name (one of 7 species listed)
+    - condition: Health condition (one of 9 conditions listed)
+    - parent_id: Unique identifier for source plant parent
+    - augmented: Boolean (True if image is augmented, False if original)
+    - checksum: SHA256 hash for integrity verification
+    - fold_assignment: Which fold (0-4) or if test set
+  Total rows: 25,962 (one per image)
+
+1.6 LABEL ONTOLOGY
+  File: reports/label_ontology.json
+  Structure: JSON dictionary with species and conditions lists
+  Purpose: Single source of truth for valid species-condition combinations
+  Species count: 7
+  Condition count: 9
+  Total label combinations: 63 (7 species × 9 conditions)
+  Format:
+    {
+      "species": ["Aloe Vera", "Azadirachta Indica", ...],
+      "conditions": ["Healthy", "Disease", "Chlorotic", ...]
+    }
+
+1.7 SPLIT MANIFESTS
+  File locations: manifests/splits_v1/fold_{N}_{train,val}.csv
+  Quantity: 10 files (5 folds × 2 splits each)
+  Contents: Subset of master manifest for each fold
+  Test set file: manifests/splits_v1/test_set.csv
+  Aggregate file: manifests/splits_v1/all_splits.csv
+
+1.8 DATA VALIDATION CHECKS
+  Corruption check: All files must open without errors (0% corruption target)
+  Metadata extraction: Extract dimensions, channels, format from all images
+  Checksum verification: Compute SHA256 for all original files
+  Parent mapping: Create parent_id to image mapping
+  Leakage verification: Verify no parent appears in multiple folds three times
+  Label consistency: Ensure all labels match ontology
+  Fold balance: Verify fold sizes are reasonable and consistent
+
+
+================================================================================
+PHASE 2: CLASSICAL BASELINE TRAINING
+================================================================================
+
+PHASE 2 OBJECTIVE:
+Establish performance baseline using parameter-matched classical ML heads on frozen deep learning backbones
+
+PHASE 2.1 INFRASTRUCTURE REQUIREMENTS
+
+2.1.1 PYTHON ENVIRONMENT
+  Python version: 3.13.1 or compatible (3.10+)
+  Virtual environment: .venv/ directory
+  Installation method: pip
+  Package location: Requirements file at requirements_phase2.txt
+
+2.1.2 DEPENDENCIES (COMPLETE LIST)
+  Core numerical:
+    - numpy>=2.2.3 (array operations and numerical computing)
+    - pandas>=2.2.3 (data manipulation and CSV handling)
+    - scipy>=1.11.0 (scientific computing utilities)
+  
+  Image processing:
+    - pillow>=11.1.0 (PIL for image loading, resizing, conversion)
+    - torchvision>=0.18.0 (image transforms and pretrained models)
+  
+  Deep learning:
+    - torch>=2.3.0 (PyTorch framework for neural networks)
+  
+  Machine learning:
+    - scikit-learn>=1.6.1 (LogisticRegression, SVC for classical heads)
+    - joblib>=1.3.0 (sklearn dependency for parallel processing)
+  
+  Utilities:
+    - tqdm>=4.67.1 (progress bars for batch processing)
+    - python-dotenv>=1.0.0 (environment variable management)
+
+2.1.3 INSTALLATION COMMAND
+  Execute: pip install -r requirements_phase2.txt
+  Expected time: 10-15 minutes on standard internet
+  Expected disk space: ~2GB after installation
+  Verification: Run "python -c 'import torch; import torchvision; print(torch.__version__)'"
+
+
+PHASE 2.2 IMAGE PREPROCESSING PIPELINE
+
+2.2.1 PREPROCESSING OBJECTIVES
+  1. Load raw images (1440×1080 JPG/PNG)
+  2. Preserve leaf morphology (aspect ratio must be maintained)
+  3. Standardize input size (224×224 for backbone compatibility)
+  4. Normalize intensity values (ImageNet mean/std normalization)
+  5. Convert to PyTorch tensor format (CHW float32)
+
+2.2.2 PREPROCESSING STEPS (IN ORDER)
+
+  Step 1: Load Image
+    Input: File path to image
+    Function: load_image_rgb()
+    Process:
+      - Open image file using PIL.Image.open()
+      - Convert to RGB color space (handle RGBA, grayscale, etc.)
+      - Verify image loaded successfully
+    Output: PIL Image object with RGB channels
+
+  Step 2: Resize with Aspect-Ratio Preservation
+    Input: PIL RGB image, target size 224×224
+    Function: resize_with_padding()
+    Process:
+      - Calculate scaling factor: min(224/width, 224/height)
+      - Resize image to new dimensions: (width*scale, height*scale)
+      - Create 224×224 canvas with black padding (0,0,0)
+      - Center-paste resized image on canvas
+      - Justification: Prevents leaf shape distortion from hard crops
+    Output: PIL image exactly 224×224, leaf centered, aspect ratio preserved
+
+  Step 3: Convert PIL Image to NumPy Array
+    Input: PIL Image (RGB, 224×224)
+    Function: image_to_numpy()
+    Process:
+      - Convert PIL image to numpy array
+      - Shape transformation: (224, 224, 3) → (3, 224, 224) HWC→CHW
+      - Normalize pixel values: [0, 255] → [0.0, 1.0] float32
+      - Data type: np.float32
+    Output: (3, 224, 224) CHW numpy array, float32, range [0.0, 1.0]
+
+  Step 4: Apply ImageNet Normalization
+    Input: (3, 224, 224) CHW numpy array in [0.0, 1.0]
+    Function: imagenet_normalize()
+    Process:
+      - Define ImageNet statistics:
+        Mean: [0.485, 0.456, 0.406] per channel
+        Std: [0.229, 0.224, 0.225] per channel
+      - Apply per-channel normalization: (array - mean) / std
+      - Formula for each pixel: normalized_value = (original - mean) / std
+    Output: (3, 224, 224) CHW numpy array, float32, range approximately [-2.5, 2.5]
+
+  Step 5: Convert to PyTorch Tensor
+    Input: (3, 224, 224) CHW numpy array (ImageNet normalized)
+    Process:
+      - Convert numpy array to torch.FloatTensor
+      - Maintain CHW format
+      - Verify dtype: torch.float32
+    Output: torch.FloatTensor of shape (3, 224, 224)
+
+2.2.3 END-TO-END PREPROCESSING FUNCTION
+  Function name: preprocess_image()
+  Input: image_path (string or Path object)
+  Output: (3, 224, 224) torch tensor or numpy array
+  Execution flow:
+    image_path → load_image_rgb() → PIL Image
+    PIL Image → resize_with_padding() → 224×224 PIL Image
+    PIL Image → image_to_numpy() → (3,224,224) numpy, [0,1]
+    numpy → imagenet_normalize() → (3,224,224) numpy, normalized
+    numpy → return as tensor or keep as array
+  Error handling:
+    - Catch PIL open() failures (invalid files)
+    - Validate image dimensions not zero
+    - Verify output shape before returning
+
+
+PHASE 2.3 BACKBONE ARCHITECTURE SPECIFICATION
+
+2.3.1 PRIMARY BACKBONE: MobileNetV3-Small
+
+  Model details:
+    - Architecture: MobileNetV3-Small with depthwise separable convolutions
+    - Parameters: 927,008 total parameters
+    - Trainable: No (frozen during training)
+    - Feature dimension output: 576-dimensional vectors
+    - Input size: 224×224×3 (3-channel RGB)
+    - Pretrained on ImageNet: Yes (weights initialize from ImageNet)
+
+  Feature extraction process:
+    Input image (1, 3, 224, 224) 
+      ↓ Convolutional layers (frozen)
+      ↓ Depthwise separable convolutions
+      ↓ Inverted residual blocks
+      ↓ Global average pooling
+      ↓ Output: (1, 576) feature vector
+
+  Why MobileNetV3-Small:
+    - Lightweight (927K parameters vs 11.7M for ResNet18)
+    - Fast inference (0.06 GFLOPS vs 1.81 for ResNet18)
+    - High accuracy (good accuracy-efficiency tradeoff)
+    - Suitable for edge deployment
+    - Sufficient capacity for leaf classification task
+
+2.3.2 ALTERNATIVE BACKBONES (OPTIONAL)
+
+  MobileNetV2:
+    - Parameters: 3,504,872
+    - Feature dimension: 1280
+    - GFLOPS: 0.30
+    - Status: Available as alternative
+
+  EfficientNet-B0:
+    - Parameters: 5,288,548
+    - Feature dimension: 1280
+    - GFLOPS: 0.39
+    - Status: Available as alternative
+
+  ResNet18:
+    - Parameters: 11,689,512
+    - Feature dimension: 512
+    - GFLOPS: 1.81
+    - Status: Available as reference/upper-bound
+
+2.3.3 BACKBONE LOADING PROCESS
+
+  Function: build_feature_extractor()
+  Input: backbone_name string
+  Process:
+    1. Import torchvision.models
+    2. Load pretrained model with weights=None (or use pretrained weights if available)
+    3. Extract feature layers (remove classification head)
+    4. Return feature extraction layers + feature dimension
+  Output: Backbone model and feature_dim integer
+  Freezing: All parameters set to requires_grad=False
+
+
+PHASE 2.4 CLASSICAL HEADS IMPLEMENTATION
+
+2.4.1 HEAD ARCHITECTURE REQUIREMENTS
+
+  All heads receive:
+    - Input: (batch_size, 576) frozen feature vectors from MobileNetV3-Small
+    - Output: (batch_size, 63) logits for 63 classes
+    - Training: On frozen features only (no backbone updates)
+
+  Parameter matching strategy:
+    - Target parameter count: ~36,000 trainable parameters
+    - Goal: Fair comparison across different head types
+    - All heads within 12% of baseline (36,351 params)
+
+2.4.2 HEAD TYPE 1: LOGISTIC REGRESSION
+
+  Class: LogisticRegressionHead
+  Parameters: 36,351 (576×63 + 63 bias)
+  Architecture: Single linear layer
+  Implementation:
+    - PyTorch linear layer: nn.Linear(576, 63)
+    - Training algorithm: sklearn LogisticRegression
+    - Solver: 'lbfgs' (efficient for 63 classes)
+    - Max iterations: 1000
+    - Regularization: L2 (default sklearn)
+    - Scaler: StandardScaler (fit on training data)
+  Methods required:
+    - __init__: Initialize linear layer and scaler
+    - forward(): PyTorch forward pass using linear layer
+    - fit(features, labels): Fit sklearn model on scaled features
+    - predict(features): Return class predictions
+    - predict_proba(features): Return class probabilities
+    - count_trainable_params(): Return 36,351
+  Training process:
+    1. Extract training features from backbone (frozen)
+    2. Initialize StandardScaler
+    3. Fit scaler on training features
+    4. Scale training features using fitted scaler
+    5. Initialize LogisticRegression with parameters
+    6. Fit LogisticRegression on scaled features and labels
+  Inference process:
+    1. Take new features
+    2. Scale using fitted scaler
+    3. Call LogisticRegression.predict() or predict_proba()
+    4. Return predictions/probabilities
+
+2.4.3 HEAD TYPE 2: SVM with RBF Kernel
+
+  Class: SVMHead with kernel='rbf'
+  Parameters: 36,351 (576×63 + 63 bias from linear layer)
+  Architecture: Linear layer + sklearn SVC
+  Implementation:
+    - PyTorch linear layer: nn.Linear(576, 63)
+    - Training algorithm: sklearn SVC
+    - Kernel: 'rbf' (Radial Basis Function)
+    - C parameter: 1.0 (regularization strength)
+    - Gamma: 'scale' (default)
+    - Probability: True (for predict_proba)
+    - Scaler: StandardScaler (required for SVM)
+  Methods required:
+    - __init__: Initialize linear layer and scaler
+    - forward(): PyTorch forward pass using linear layer
+    - fit(features, labels): Fit sklearn SVC on scaled features
+    - predict(features): Return class predictions
+    - predict_proba(features): Return class probabilities
+    - count_trainable_params(): Return 36,351
+  Training process:
+    1. Extract training features from backbone (frozen)
+    2. Initialize StandardScaler
+    3. Fit scaler on training features
+    4. Scale training features using fitted scaler
+    5. Initialize SVC with rbf kernel and parameters
+    6. Fit SVC on scaled features and labels
+  Inference process:
+    1. Take new features
+    2. Scale using fitted scaler
+    3. Call SVC.predict() or predict_proba()
+    4. Return predictions/probabilities
+  Note: RBF kernel typically provides better accuracy than linear kernel
+
+2.4.4 HEAD TYPE 3: SVM with Linear Kernel
+
+  Class: SVMHead with kernel='linear'
+  Parameters: 36,351 (same as RBF variant)
+  Architecture: Linear layer + sklearn SVC
+  Implementation:
+    - PyTorch linear layer: nn.Linear(576, 63)
+    - Training algorithm: sklearn SVC
+    - Kernel: 'linear' (linear kernel)
+    - C parameter: 1.0
+    - Gamma: Not used with linear kernel
+    - Probability: True
+    - Scaler: StandardScaler (still required)
+  Purpose: Baseline for comparison with RBF kernel
+  Expected performance: Lower than RBF due to limited capacity
+  Training/Inference: Identical to RBF variant, just kernel='linear'
+
+2.4.5 HEAD TYPE 4: Dense MLP
+
+  Class: DenseMLP
+  Parameters: 41,023 total
+    - Layer 1 (576→64): 576×64 + 64 = 36,928 parameters
+    - Layer 2 (64→63): 64×63 + 63 = 4,095 parameters
+    - Total: 36,928 + 4,095 = 41,023
+  Architecture:
+    Input (576)
+      ↓ Linear(576, 64)
+      ↓ ReLU activation
+      ↓ Dropout(0.1)
+      ↓ Linear(64, 63)
+      ↓ Output (63)
+  Implementation:
+    - PyTorch nn.Sequential
+    - Activation: ReLU (Rectified Linear Unit)
+    - Regularization: Dropout (0.1 = 10% drop rate)
+    - Optimizer: Adam (lr=0.001)
+    - Loss function: CrossEntropyLoss
+    - Batch size: Flexible, typically 32 or 64
+    - Epochs: 50 (for training on feature vectors)
+  Methods required:
+    - __init__: Define sequential model
+    - forward(x): Apply MLP layers to input
+    - count_trainable_params(): Return 41,023
+  Training process:
+    1. Convert features to torch tensor on device (GPU/CPU)
+    2. Initialize Adam optimizer
+    3. Initialize CrossEntropyLoss
+    4. Loop for 50 epochs:
+       a. Zero gradients
+       b. Forward pass: logits = model(features)
+       c. Compute loss: loss = criterion(logits, labels)
+       d. Backward pass: loss.backward()
+       e. Update weights: optimizer.step()
+  Inference process:
+    1. Set model to eval mode
+    2. Forward pass without gradients: logits = model(features)
+    3. Get predictions: predictions = logits.argmax(dim=1)
+    4. Return predictions
+
+2.4.6 COMMON INTERFACE FOR ALL HEADS
+
+  Each head class must provide:
+    1. fit(features: np.ndarray, labels: np.ndarray)
+       Purpose: Train head on frozen features
+       Input: (n_samples, 576) array and (n_samples,) label array
+    2. predict(features: np.ndarray) → np.ndarray
+       Purpose: Get class predictions
+       Output: (n_samples,) array of class indices (0-62)
+    3. predict_proba(features: np.ndarray) → np.ndarray
+       Purpose: Get class probabilities
+       Output: (n_samples, 63) array of probabilities [0, 1]
+    4. count_trainable_params() → int
+       Purpose: Return number of trainable parameters
+
+
+PHASE 2.5 FEATURE EXTRACTION PROCESS
+
+2.5.1 BATCH FEATURE EXTRACTION
+
+  Function: extract_features()
+  Input: List of image file paths
+  Output: (n_samples, 576) numpy array of frozen features
+  Process:
+    1. Load backbone model (MobileNetV3-Small)
+    2. Move backbone to device (GPU/CPU)
+    3. Set backbone to eval mode (no dropout, batch norm uses running stats)
+    4. Create empty features list
+    5. For each image path:
+       a. Load and preprocess image using preprocess_image()
+       b. Convert to batch tensor (1, 3, 224, 224)
+       c. Move tensor to device
+       d. Forward pass through backbone (no gradients)
+       e. Extract feature vector (1, 576)
+       f. Append to features list
+    6. Convert list to numpy array (n_samples, 576)
+    7. Return as float32 array
+  Error handling:
+    - If image fails to load: append zero vector (576 zeros)
+    - Log failed images for debugging
+  GPU acceleration:
+    - With GPU: ~2-5 minutes for 2000 images
+    - With CPU: ~10-15 minutes for 2000 images
+
+
+PHASE 2.6 TRAINING DATA PREPARATION
+
+2.6.1 DATA LOADING FROM MANIFESTS
+
+  File source: manifests/splits_v1/fold_{N}_{train,val}.csv
+  Columns required: file_path, species, condition
+  Process for each fold:
+    1. Load fold_N_train.csv (training split)
+    2. Load fold_N_val.csv (validation split)
+    3. For each row in training CSV:
+       a. Read file_path relative to data directory
+       b. Look up species and condition in ontology
+       c. Create label index: condition_idx * 7 + species_idx
+       d. Label range: 0-62 (63 total classes)
+    4. Store image paths and label indices separately
+    5. Create pairs: (image_paths, labels) for each split
+
+2.6.2 LABEL INDEX MAPPING
+
+  Label creation formula:
+    label_index = condition_index * num_species + species_index
+    where condition_index ∈ [0, 8] and species_index ∈ [0, 6]
+
+  Example mapping:
+    - Aloe Vera + Healthy: condition=0, species=0 → label=0
+    - Aloe Vera + Disease: condition=1, species=0 → label=7
+    - Azadirachta + Healthy: condition=0, species=1 → label=1
+    - Last label: Piper Betle + Distorted: condition=8, species=6 → label=62
+
+  Label order depends on species list order from ontology JSON
+
+2.6.3 BATCH ASSEMBLY FOR TRAINING
+
+  Training batch structure:
+    - Features: (batch_size, 576) numpy array
+    - Labels: (batch_size,) numpy array of integers 0-62
+    - Batch size: All training features at once (no mini-batching needed for sklearn)
+
+  Validation batch structure:
+    - Same structure as training batch
+    - Used for evaluation only, not updates
+
+
+PHASE 2.7 HEAD TRAINING EXECUTION
+
+2.7.1 TRAINING SEQUENCE FOR SINGLE FOLD
+
+  Step 1: Load split manifest for fold N
+    - File: manifests/splits_v1/fold_N_train.csv
+    - File: manifests/splits_v1/fold_N_val.csv
+    - Extract image paths and labels
+
+  Step 2: Extract frozen features for training set
+    - Input: Training image paths (~1600 images)
+    - Output: (1600, 576) feature array
+    - Time: ~25-30 minutes on GPU, ~60 minutes on CPU
+    - Caching: Can optionally cache to disk for reuse
+
+  Step 3: Extract frozen features for validation set
+    - Input: Validation image paths (~400 images)
+    - Output: (400, 576) feature array
+    - Time: ~6-8 minutes on GPU, ~15 minutes on CPU
+
+  Step 4: Train Logistic Regression head
+    - Input: Training features (1600, 576) and labels (1600,)
+    - Output: Fitted LR model
+    - Time: <1 minute (sklearn is very fast)
+    - Evaluate on validation set
+    - Record metrics: accuracy, F1, precision, recall
+
+  Step 5: Train SVM (RBF) head
+    - Input: Same training features and labels
+    - Output: Fitted SVM model
+    - Time: 1-5 minutes depending on solver
+    - Evaluate on validation set
+    - Record metrics
+
+  Step 6: Train SVM (Linear) head
+    - Input: Same training features and labels
+    - Output: Fitted SVM model
+    - Time: 1-3 minutes
+    - Evaluate on validation set
+    - Record metrics
+
+  Step 7: Train Dense MLP head
+    - Input: Same training features converted to tensors
+    - Output: Trained MLP model
+    - Time: 1-2 minutes (50 epochs)
+    - Evaluate on validation set
+    - Record metrics
+
+  Step 8: Aggregate results
+    - Compile metrics for all 4 heads
+    - Format: {head_name: {accuracy: X, f1: Y, precision: Z, recall: W}}
+    - Save to reports/classical_baseline_fold{N}.json
+
+2.7.2 METRIC COMPUTATION
+
+  For each head on validation set:
+    1. Get predictions: y_pred = head.predict(val_features)
+    2. Ground truth: y_true = val_labels
+    3. Compute metrics:
+       - Accuracy: (y_pred == y_true).mean()
+       - F1-score: sklearn.metrics.f1_score(y_true, y_pred, average='weighted')
+       - Precision: sklearn.metrics.precision_score(y_true, y_pred, average='weighted')
+       - Recall: sklearn.metrics.recall_score(y_true, y_pred, average='weighted')
+    4. Weighted averaging: Account for class imbalance (important for 63 classes)
+
+
+PHASE 2.8 RESULTS STORAGE
+
+2.8.1 RESULTS FILE FORMAT
+
+  File location: reports/classical_baseline_fold{N}.json
+  Format: JSON dictionary
+  Structure:
+    {
+      "logistic_regression": {
+        "accuracy": 0.XXXX,
+        "f1": 0.XXXX,
+        "precision": 0.XXXX,
+        "recall": 0.XXXX
+      },
+      "svm_rbf": {
+        "accuracy": 0.XXXX,
+        "f1": 0.XXXX,
+        "precision": 0.XXXX,
+        "recall": 0.XXXX
+      },
+      "svm_linear": {
+        "accuracy": 0.XXXX,
+        "f1": 0.XXXX,
+        "precision": 0.XXXX,
+        "recall": 0.XXXX
+      },
+      "dense_mlp": {
+        "accuracy": 0.XXXX,
+        "f1": 0.XXXX,
+        "precision": 0.XXXX,
+        "recall": 0.XXXX
+      }
+    }
+
+  Files created per complete run:
+    - reports/classical_baseline_fold0.json
+    - reports/classical_baseline_fold1.json
+    - reports/classical_baseline_fold2.json
+    - reports/classical_baseline_fold3.json
+    - reports/classical_baseline_fold4.json
+
+
+================================================================================
+PHASE 2 COMMAND EXECUTION REFERENCE
+================================================================================
+
+COMMAND 1: Install Dependencies
+  Command: pip install -r requirements_phase2.txt
+  Purpose: Install all required packages
+  Expected time: 10-15 minutes
+  Verification: python -c "import torch; print(torch.__version__)"
+
+COMMAND 2: Validate Backbone
+  Command: python src/tools/train_backbone_sanity.py --sample-size 10
+  Purpose: Test backbone loading and feature extraction on 10 sample images
+  Expected time: 2-3 minutes
+  Expected output:
+    PHASE 2 BACKBONE SANITY CHECK
+    Backbone: mobilenet_v3_small
+    Sample images: 10
+    Feature dim: 576
+    Batch tensor shape: (10, 3, 224, 224)
+    Feature tensor shape: (10, 576)
+    Logits shape: (10, 63)
+
+COMMAND 3: Train Classical Baseline - Single Fold
+  Command: python src/tools/train_classical_baseline.py --fold 0
+  Purpose: Train all 4 classical heads on fold 0
+  Expected time: 45-60 minutes (GPU), 90-120 minutes (CPU)
+  Expected output:
+    - Console: Progress bars for feature extraction
+    - Console: Metrics table with accuracy, F1, precision, recall for each head
+    - File: reports/classical_baseline_fold0.json with results
+
+COMMAND 4: Train Classical Baseline - All Folds
+  Command: for fold in {0..4}; do python src/tools/train_classical_baseline.py --fold $fold; done
+  Purpose: Train all heads on all 5 folds
+  Expected time: 4-5 hours (GPU), 8-10 hours (CPU)
+  Expected output: 5 JSON files (one per fold) with results
+
+COMMAND 5: View Results
+  Command: cat reports/classical_baseline_fold0.json
+  Purpose: View results for fold 0
+
+
+================================================================================
+DIRECTORY STRUCTURE AND FILE ORGANIZATION
+================================================================================
+
+PROJECT ROOT
+├── data/
+│   ├── raw/
+│   │   ├── Metadata.csv                    (Original metadata from source)
+│   │   ├── Original Dataset/               (Original images organized by species/condition)
+│   │   │   ├── Aloe Vera Healthy/
+│   │   │   ├── Aloe Vera Disease/
+│   │   │   ├── Aloe Vera Chlorotic/
+│   │   │   └── ... (7 species × 9 conditions)
+│   │   ├── Augmented Dataset/              (Augmented images)
+│   │   │   ├── Aloe Vera Healthy/
+│   │   │   └── ... (same structure as Original)
+│   │   └── Background Remove Dataset/      (Background-removed versions)
+│   ├── interim/                            (Preprocessing cache)
+│   └── processed/                          (Final processed data)
+│
+├── manifests/
+│   ├── master_manifest.csv                 (25,962 rows, all images with metadata)
+│   └── splits_v1/
+│       ├── fold_0_train.csv               (~1344 rows)
+│       ├── fold_0_val.csv                 (~417 rows)
+│       ├── fold_1_train.csv
+│       ├── fold_1_val.csv
+│       ├── fold_2_train.csv
+│       ├── fold_2_val.csv
+│       ├── fold_3_train.csv
+│       ├── fold_3_val.csv
+│       ├── fold_4_train.csv
+│       ├── fold_4_val.csv
+│       ├── test_set.csv                   (4,032 rows)
+│       └── all_splits.csv                 (aggregate file)
+│
+├── reports/
+│   ├── label_ontology.json                (7 species, 9 conditions)
+│   ├── parent_leaf_mapping.json           (parent_id to image mapping)
+│   ├── data_audit.json                    (data quality report)
+│   ├── raw_checksums.txt                  (SHA256 hashes)
+│   ├── raw_metadata_extracted.csv         (extracted image metadata)
+│   ├── checksum_verification.txt          (verification report)
+│   ├── classical_baseline_fold0.json      (Phase 2 results, fold 0)
+│   ├── classical_baseline_fold1.json
+│   ├── classical_baseline_fold2.json
+│   ├── classical_baseline_fold3.json
+│   └── classical_baseline_fold4.json
+│
+├── src/
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   └── preprocessing.py               (Image loading and normalization)
+│   │       ├── load_image_rgb()
+│   │       ├── resize_with_padding()
+│   │       ├── image_to_numpy()
+│   │       ├── imagenet_normalize()
+│   │       └── preprocess_image()
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── classical_heads.py             (LR, SVM, MLP implementations)
+│   │   │   ├── LogisticRegressionHead
+│   │   │   ├── SVMHead
+│   │   │   └── DenseMLP
+│   │   └── phase2_backbones.py            (Backbone loading and feature extraction)
+│   │       ├── build_feature_extractor()
+│   │       ├── freeze_module()
+│   │       └── count_parameters()
+│   └── tools/
+│       ├── train_backbone_sanity.py       (Validation script)
+│       └── train_classical_baseline.py    (Training runner)
+│
+├── checkpoints/                           (Model checkpoints, if saved)
+├── logs/                                  (Training logs, if generated)
+│
+├── .gitignore                             (Exclude data folders from git)
+├── requirements_phase1.txt                (Phase 1 dependencies)
+├── requirements_phase2.txt                (Phase 2 dependencies)
+├── .venv/                                 (Virtual environment)
+│
+├── README.md                              (Project overview)
+├── PHASE_1_SUMMARY.md                     (Phase 1 details)
+├── PHASE_2_STATUS.md                      (Phase 2 details)
+├── PHASE_2_QUICK_REFERENCE.md            (Command reference)
+├── EXECUTION_READY.md                     (Deployment checklist)
+├── PROJECT_STATUS_REPORT.docx            (Comprehensive status)
+└── prompt.txt                             (This file)
+
+
+================================================================================
+KEY TECHNICAL SPECIFICATIONS AND CONSTANTS
+================================================================================
+
+IMAGE SPECIFICATIONS:
+  - Input resolution: 1440×1080 pixels
+  - Color channels: 3 (RGB)
+  - Format: JPG or PNG
+  - Background: Removed (transparent or white)
+
+BACKBONE SPECIFICATIONS:
+  - Name: MobileNetV3-Small
+  - Input size: 224×224×3
+  - Output feature dimension: 576
+  - Total parameters: 927,008 (all frozen)
+  - Trainable parameters: 0 (frozen)
+
+CLASSIFICATION SPECIFICATIONS:
+  - Number of species: 7
+  - Number of conditions: 9
+  - Total classes: 63 (7 × 9)
+  - Label indices: 0-62
+  - Label formula: condition_idx * 7 + species_idx
+
+NORMALIZATION CONSTANTS:
+  - ImageNet mean: [0.485, 0.456, 0.406]
+  - ImageNet std: [0.229, 0.224, 0.225]
+  - Normalized output range: approximately [-2.5, 2.5]
+
+DATA SPLIT SPECIFICATIONS:
+  - Total unique parents: 1,981
+  - Test set parents: 307 (not used for training)
+  - Development set parents: 1,674
+  - Number of folds: 5
+  - Fold distribution: ~334-335 parents per fold
+  - Parent leakage: Zero (verified multiple times)
+  - Train/Val split per fold: ~80/20
+
+HEAD PARAMETER SPECIFICATIONS:
+  - Logistic Regression: 36,351 parameters (576×63 + 63)
+  - SVM RBF: 36,351 parameters
+  - SVM Linear: 36,351 parameters
+  - Dense MLP: 41,023 parameters (576×64 + 64×63 + biases)
+  - Average: 37,519 parameters
+  - Parameter matching tolerance: ±12%
+
+TRAINING HYPERPARAMETERS:
+  - Logistic Regression max iterations: 1000
+  - Logistic Regression solver: 'lbfgs'
+  - SVM C parameter: 1.0
+  - SVM kernel: 'rbf' or 'linear'
+  - MLP hidden dimension: 64
+  - MLP dropout rate: 0.1
+  - MLP epochs: 50
+  - MLP learning rate: 0.001
+  - MLP optimizer: Adam
+
+PERFORMANCE BASELINES:
+  - Random guessing accuracy: 1/63 ≈ 1.6%
+  - Majority class baseline: ~5-10% (depends on class imbalance)
+  - Target accuracy (best classical head): >50%
+
+
+================================================================================
+STEP-BY-STEP BUILD GUIDE
+================================================================================
+
+BUILD STEP 1: ENVIRONMENT SETUP
+  1. Create project directory: mkdir QMedLeafNet
+  2. Create Python virtual environment: python -m venv .venv
+  3. Activate virtual environment:
+     - Windows: .venv\Scripts\activate
+     - Linux/Mac: source .venv/bin/activate
+  4. Upgrade pip: pip install --upgrade pip
+  5. Create requirements_phase2.txt with exact packages and versions (see dependencies list above)
+  6. Install dependencies: pip install -r requirements_phase2.txt
+  7. Verify installation: python -c "import torch, torchvision, sklearn; print('All packages imported successfully')"
+
+BUILD STEP 2: PROJECT STRUCTURE CREATION
+  1. Create directories:
+     mkdir -p data/raw data/interim data/processed
+     mkdir -p manifests/splits_v1
+     mkdir -p reports
+     mkdir -p src/utils src/models src/tools
+     mkdir -p checkpoints logs
+  2. Create __init__.py files:
+     touch src/__init__.py src/utils/__init__.py src/models/__init__.py
+
+BUILD STEP 3: IMAGE DATA COLLECTION
+  1. Acquire 1,981 original images (background-removed, 1440×1080)
+  2. Organize by species and condition folders under data/raw/Original Dataset/
+  3. Create augmented versions (3 rotations × 2 flips = 6 versions each → 11,886 additional)
+  4. Or programmatically augment using torchvision.transforms
+
+BUILD STEP 4: METADATA EXTRACTION
+  1. Extract image dimensions and format from all files
+  2. Create parent_id mapping (unique ID per source plant)
+  3. Verify no corrupted files (read each image successfully)
+  4. Compute SHA256 checksum for each original image
+  5. Create master metadata CSV with: path, species, condition, parent_id, augmented, checksum
+
+BUILD STEP 5: LABEL ONTOLOGY DEFINITION
+  1. Define 7 species list
+  2. Define 9 conditions list
+  3. Create reports/label_ontology.json with both lists
+  4. Verify all species-condition pairs are valid in data
+
+BUILD STEP 6: DATA SPLIT CREATION
+  1. Identify 307 unique parents for test set
+  2. Partition remaining 1,674 parents into 5 folds (334-335 each)
+  3. Ensure zero parent leakage (no parent in multiple folds)
+  4. Create manifests/splits_v1/fold_{N}_{train,val}.csv for each fold (N=0-4)
+  5. Create manifests/splits_v1/test_set.csv for test data
+  6. Create manifests/master_manifest.csv aggregating all rows
+
+BUILD STEP 7: IMPLEMENT PREPROCESSING MODULE
+  1. Create src/utils/preprocessing.py
+  2. Implement load_image_rgb() function
+  3. Implement resize_with_padding() function
+  4. Implement image_to_numpy() function
+  5. Implement imagenet_normalize() function
+  6. Implement preprocess_image() as wrapper
+  7. Test on sample image: verify output shape (3,224,224) and dtype
+
+BUILD STEP 8: IMPLEMENT BACKBONE INFRASTRUCTURE
+  1. Create src/models/phase2_backbones.py
+  2. Define BackboneSpec dataclass
+  3. Define BACKBONE_SPECS dictionary with 4 backbones
+  4. Implement build_feature_extractor() function
+  5. Implement freeze_module() function
+  6. Implement count_parameters() function
+  7. Test backbone loading and freezing
+
+BUILD STEP 9: IMPLEMENT CLASSICAL HEADS
+  1. Create src/models/classical_heads.py
+  2. Implement LogisticRegressionHead class with all methods
+  3. Implement SVMHead class with both kernels support
+  4. Implement DenseMLP class with PyTorch layers
+  5. Implement count_head_parameters() utility function
+  6. Verify parameter counts match specifications
+  7. Test instantiation and methods on sample data
+
+BUILD STEP 10: IMPLEMENT VALIDATION SCRIPT
+  1. Create src/tools/train_backbone_sanity.py
+  2. Add argparse CLI for --manifest, --ontology, --backbone, --sample-size, --freeze-backbone
+  3. Implement backbone loading
+  4. Implement feature extraction on 10 sample images
+  5. Verify output shapes and dtypes
+  6. Test execution with --help
+
+BUILD STEP 11: IMPLEMENT TRAINING SCRIPT
+  1. Create src/tools/train_classical_baseline.py
+  2. Add argparse CLI for --data-dir, --manifest, --ontology, --backbone, --fold
+  3. Implement data loading from manifests
+  4. Implement label index creation (condition_idx * 7 + species_idx)
+  5. Implement feature extraction for training and validation sets
+  6. Implement training loops for all 4 heads
+  7. Implement metric computation (accuracy, F1, precision, recall)
+  8. Implement results saving to JSON
+  9. Test with --help and on fold 0
+
+BUILD STEP 12: DOCUMENTATION AND TESTING
+  1. Create README.md with project overview
+  2. Create PHASE_1_SUMMARY.md documenting Phase 1 completion
+  3. Create PHASE_2_STATUS.md with architecture details
+  4. Create PHASE_2_QUICK_REFERENCE.md with commands
+  5. Create this prompt.txt file
+  6. Test all commands end-to-end
+  7. Verify results save correctly to JSON
+
+
+================================================================================
+EXECUTION SEQUENCE FOR COMPLETE PIPELINE
+================================================================================
+
+EXECUTION ORDER:
+
+1. PREPARE ENVIRONMENT (Estimated time: 10 minutes)
+   - Install Python 3.13+
+   - Create virtual environment
+   - Install dependencies from requirements_phase2.txt
+   - Verify all imports work
+
+2. PREPARE DATA (Estimated time: Variable, depends on data availability)
+   - Ensure 25,962 images are in correct directory structure
+   - Verify master_manifest.csv exists and is complete (25,962 rows)
+   - Verify manifests/splits_v1/ contains 10 fold files
+   - Verify reports/label_ontology.json exists with 7 species, 9 conditions
+
+3. VALIDATE SETUP (Estimated time: 3 minutes)
+   - Run backbone sanity check on 10 samples
+   - Verify output shapes and dtypes
+   - Confirm GPU availability (optional but recommended)
+
+4. EXECUTE PHASE 2 TRAINING (Choose one):
+   
+   Option A - Quick Proof-of-Concept (Estimated time: 1-2 hours)
+   - Run: python src/tools/train_classical_baseline.py --fold 0
+   - Expected output: reports/classical_baseline_fold0.json
+   - Acceptable accuracy: >10% (significantly above random 1.6%)
+   
+   Option B - Full Experiment (Estimated time: 5-8 hours on GPU)
+   - Run: for fold in {0..4}; do python src/tools/train_classical_baseline.py --fold $fold; done
+   - Expected output: 5 JSON files (fold 0-4)
+   - Acceptable accuracy: >40% on best head across all folds
+
+5. ANALYZE RESULTS (Estimated time: 30 minutes)
+   - Aggregate metrics across all folds
+   - Compute mean and standard deviation
+   - Identify best-performing head architecture
+   - Identify challenging vs easy species
+   - Document findings for Phase 3
+
+6. PREPARE FOR PHASE 3 (Estimated time: Variable)
+   - Document Phase 2 baseline performance
+   - Plan quantum head design
+   - Gather quantum computing resources (Qiskit, simulators)
+   - Design hybrid classical-quantum architecture
+
+
+================================================================================
+ERROR HANDLING AND TROUBLESHOOTING
+================================================================================
+
+COMMON ERRORS AND SOLUTIONS:
+
+Error 1: "ModuleNotFoundError: No module named 'torch'"
+  Cause: PyTorch not installed or virtual environment not activated
+  Solution:
+    1. Verify virtual environment is activated: which python (should show .venv path)
+    2. Reinstall PyTorch: pip install torch>=2.3.0
+    3. Verify: python -c "import torch"
+
+Error 2: "CUDA out of memory"
+  Cause: GPU memory insufficient for batch processing
+  Solution:
+    1. Use CPU only: Set environment variable before running: CUDA_VISIBLE_DEVICES=""
+    2. Or reduce batch size in code (not applicable here as we process all at once)
+    3. Or use smaller backbone like MobileNetV2
+
+Error 3: "FileNotFoundError: manifests/splits_v1/fold_0_train.csv"
+  Cause: Split manifests not created or in wrong directory
+  Solution:
+    1. Verify current working directory: pwd
+    2. Verify file exists: ls manifests/splits_v1/
+    3. Create splits if missing (requires Phase 1 completion)
+
+Error 4: "sklearn solver lbfgs did not converge"
+  Warning (not fatal): Logistic Regression didn't fully converge
+  Solution:
+    1. Increase max_iter in LogisticRegression (already set to 1000)
+    2. Try different solver: 'saga' or 'newton-cg'
+    3. Check data scaling (already implemented with StandardScaler)
+
+Error 5: "PIL.UnidentifiedImageError: cannot identify image file"
+  Cause: Corrupted image or unsupported format
+  Solution:
+    1. Remove corrupted file from dataset
+    2. Verify image format is JPG, PNG, or similar
+    3. Re-download image if necessary
+
+Error 6: "AssertionError: label out of range (0, 63)"
+  Cause: Label index incorrectly calculated or CSV has invalid species/condition
+  Solution:
+    1. Verify label_ontology.json has exactly 7 species and 9 conditions
+    2. Check CSV for species/condition values not in ontology
+    3. Verify label calculation formula: condition_idx * 7 + species_idx
+
+
+================================================================================
+PERFORMANCE EXPECTATIONS AND OPTIMIZATION
+================================================================================
+
+EXPECTED PERFORMANCE METRICS:
+
+Random baseline: 1.6% accuracy (1/63 classes)
+Majority class baseline: 5-10% accuracy
+
+Logistic Regression head:
+  Expected accuracy: 35-45%
+  Training time: <1 minute
+  Inference time per image: <1ms
+
+SVM (RBF) head:
+  Expected accuracy: 40-55% (typically best)
+  Training time: 2-5 minutes
+  Inference time per image: 1-5ms (depends on support vectors)
+
+SVM (Linear) head:
+  Expected accuracy: 30-40% (lower than RBF)
+  Training time: 1-3 minutes
+  Inference time per image: <1ms
+
+Dense MLP head:
+  Expected accuracy: 35-50%
+  Training time: 1-2 minutes (50 epochs)
+  Inference time per image: <1ms
+
+Cross-fold consistency:
+  Standard deviation: <5% between folds (goal)
+  Indicates stable, generalizable model
+
+GPU OPTIMIZATION TIPS:
+  1. Use GPU for feature extraction (25-30 min vs 60 min on CPU)
+  2. Process images in batches of 32-64
+  3. Use torch.cuda.empty_cache() if running multiple iterations
+  4. Monitor GPU memory: nvidia-smi
+
+CPU OPTIMIZATION TIPS:
+  1. Enable multi-threading: OMP_NUM_THREADS=8
+  2. Use sklearn's n_jobs=-1 for parallel processing
+  3. Reduce image preprocessing resolution if needed
+  4. Consider using CPU-optimized PyTorch build
+
+
+================================================================================
+NEXT PHASES PREVIEW (Phase 3+)
+================================================================================
+
+PHASE 3: QUANTUM INTEGRATION (Future)
+  Objective: Implement hybrid quantum-classical heads
+
+  Quantum components needed:
+    - Qiskit 0.39+ framework
+    - Quantum simulator (Qiskit Aer)
+    - Optional: IBM Quantum or other cloud access
+    - VQC (Variational Quantum Classifier)
+    - Parameterized quantum circuits
+
+  Hybrid head architecture:
+    Input (576-dim frozen features)
+      ↓ Classical projection (optional)
+      ↓ Quantum embedding (parameterized circuit)
+      ↓ Quantum measurement (observable measurement)
+      ↓ Classical decoder (nn.Linear)
+      ↓ Output (63-class logits)
+
+  Benchmarking:
+    Compare quantum head accuracy vs best classical head
+    Target: Within 90% of classical baseline
+    Parameters: Similar to classical heads (~36-41K)
+
+
+PHASE 4: OPTIMIZATION (Future)
+  - Fine-tune backbone (unlock top layers)
+  - Ensemble methods (combine multiple heads)
+  - Hyperparameter search (learning rates, regularization)
+  - Domain-specific augmentation
+
+
+================================================================================
+END OF COMPREHENSIVE BUILD PROMPT
+================================================================================
+
+This prompt contains all necessary information to build and execute the QMedLeafNet
+pipeline from scratch. Each section is organized from high-level concepts to specific
+implementation details, enabling developers to understand the architecture at any level
+of granularity.
+
+Last updated: May 14, 2026
+Status: Phase 2 Infrastructure Complete, Ready for Training Execution

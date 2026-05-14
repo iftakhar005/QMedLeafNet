@@ -1,0 +1,1118 @@
+================================================================================
+QMEDLEAFNET PROJECT PIPELINE - VISUAL ARCHITECTURE AND IMAGE GENERATION PROMPT
+================================================================================
+
+OVERVIEW FOR IMAGE GENERATION
+================================================================================
+
+PURPOSE: Generate a comprehensive visual diagram/image of the complete QMedLeafNet
+         pipeline showing all components, data flows, and architectural layers
+
+TARGET: AI image generation tools (DALL-E, Midjourney, nanobanana, etc.) or
+        visualization libraries (Graphviz, Mermaid, PlantUML)
+
+OUTPUT: High-quality architecture diagram showing complete pipeline with:
+        - All pipeline phases (Phase 1, 2, 3)
+        - Data flow from input to output
+        - All computational components
+        - Connected layers and transformations
+        - Color-coded sections
+        - Labeled connections and dimensions
+
+
+================================================================================
+SECTION 1: COMPLETE PIPELINE ARCHITECTURE VISUAL DESCRIPTION
+================================================================================
+
+1.1 OVERALL PIPELINE STRUCTURE
+
+The pipeline consists of THREE MAIN VERTICAL SECTIONS (left to right):
+
+SECTION A: INPUT & DATA FOUNDATION (Left Column, Blue Tones)
+├─ Raw Images (1440×1080 PNG/JPG)
+│  └─ 25,962 total images
+│     ├─ 1,981 original images
+│     └─ 23,981 augmented images
+├─ 7 Species
+├─ 9 Health Conditions
+└─ 63 Total Classes (7 × 9)
+
+SECTION B: PROCESSING & FEATURE EXTRACTION (Middle Column, Purple/Indigo Tones)
+├─ Preprocessing Pipeline (5 Steps)
+├─ Backbone Feature Extractor (MobileNetV3-Small)
+├─ Feature Vectors (576-dimensional)
+└─ 4 Classical Machine Learning Heads
+
+SECTION C: OUTPUT & RESULTS (Right Column, Green Tones)
+├─ Classification Predictions
+├─ Performance Metrics
+├─ Cross-Fold Results
+└─ Benchmarks & Comparisons
+
+1.2 VISUAL LAYOUT DIMENSIONS
+
+Canvas size: 1920 × 1080 pixels (horizontal layout)
+Aspect ratio: 16:9 (widescreen)
+Main sections: 3 equal vertical columns (640px each)
+Margins: 60px on all sides
+Grid spacing: 40px between elements
+
+1.3 COLOR SCHEME FOR VISUALIZATION
+
+PRIMARY COLORS:
+  Data Input Section: #2196F3 (Blue) - represents raw data
+  Processing Section: #9C27B0 (Purple) - represents computation
+  Output Section: #4CAF50 (Green) - represents results
+  Phase 3 (Future): #FF9800 (Orange) - represents quantum
+
+ACCENT COLORS:
+  Data Flow Arrows: #FFC107 (Amber) - highlights connections
+  Success/Active: #00BCD4 (Cyan) - running/active processes
+  Errors/Issues: #F44336 (Red) - warnings or problems
+  Neutral/Disabled: #BDBDBD (Gray) - inactive components
+
+TEXT COLORS:
+  Primary text: #212121 (Dark Gray)
+  Secondary text: #666666 (Medium Gray)
+  Light text (on dark): #FFFFFF (White)
+  Accent text: #1976D2 (Blue)
+
+BACKGROUNDS:
+  Component boxes: #FFFFFF (White) with shadows
+  Section backgrounds: Transparent with subtle tint
+  Data containers: Light blue (#E3F2FD)
+  Model containers: Light purple (#F3E5F5)
+  Result containers: Light green (#E8F5E9)
+
+
+================================================================================
+SECTION 2: PHASE 1 - DATA FOUNDATION VISUALIZATION
+================================================================================
+
+VISUAL POSITION: Left-most column, top section
+
+2.1 INPUT IMAGE REPRESENTATION
+  Visual element: Stack of 5-6 overlapping images
+  Position: Top-left of diagram
+  Size: 120px × 120px stack
+  Appearance:
+    - Show leaf images with different conditions
+    - Include diversity: Healthy, diseased, chlorotic
+    - Images slightly rotated (5-15 degrees)
+    - Semi-transparent overlap
+  Label above: "RAW IMAGES" (14px, bold)
+  Stats below:
+    "1,440 × 1,080 px"
+    "25,962 total"
+    "1,981 original + 23,981 aug."
+
+2.2 SPECIES REPRESENTATION
+  Visual element: 7 leaf icons/illustrations arranged in circle
+  Position: Center-left, middle of Phase 1
+  Size: 140px diameter circle
+  Arrangement:
+    - Aloe Vera (top)
+    - Azadirachta (top-right)
+    - Centella Asiatica (right)
+    - Hibiscus (bottom-right)
+    - Kalanchoe (bottom)
+    - Mikania (bottom-left)
+    - Piper Betle (left)
+  Each leaf:
+    - Simple geometric leaf shape
+    - Color: Green with species-specific shade variation
+    - Size: 20px each
+    - Label: Species name (8px)
+  Center label: "7 Species"
+
+2.3 CONDITIONS REPRESENTATION
+  Visual element: 3×3 grid of condition boxes
+  Position: Below species circle
+  Size: 150px × 150px grid
+  Grid layout:
+    Row 1: Healthy | Disease | Chlorotic
+    Row 2: Insects | Mild Disease | Dried
+    Row 3: Young Healthy | Mature Healthy | Distorted
+  Each box:
+    - 50px × 50px
+    - Color-coded condition
+    - Icon inside (simple SVG)
+    - Label below (8px)
+  Center label: "9 Conditions"
+
+2.4 DATA SPLIT VISUALIZATION
+  Visual element: Horizontal bar with segments
+  Position: Bottom of Phase 1
+  Size: 200px × 40px
+  Segments:
+    - Test Set: 307 parents (4,032 images) - 15% width, Red color
+    - Dev Set: 1,674 parents (21,930 images) - 85% width, Blue color
+  Labels:
+    - "Test Set\n307 parents\n4,032 files" (small text on red)
+    - "Development Set\n1,674 parents\n21,930 files" (small text on blue)
+  Title above: "5-FOLD CROSS-VALIDATION (Zero Leakage Verified)"
+
+2.5 CONNECTIONS TO PHASE 2
+  Visual elements: 3 vertical arrows
+  Position: From Phase 1 to Phase 2 boundary
+  Arrow properties:
+    - Source: Points from data split box
+    - Target: Points to preprocessing pipeline
+    - Color: Amber (#FFC107)
+    - Width: 3px
+    - Label: "25,962 Images" (centered on arrow)
+    - Arrow head: Triangle pointing down
+
+2.6 MANIFEST FILES REPRESENTATION
+  Visual element: Stack of 3 sheets
+  Position: Far left edge, Phase 1
+  Size: 60px × 80px
+  Files shown:
+    - master_manifest.csv (top, full width)
+    - fold_0_train.csv (middle, offset)
+    - label_ontology.json (bottom, offset)
+  Each sheet:
+    - White background
+    - Subtle grid lines
+    - File icon in corner
+    - Label below (8px)
+
+
+================================================================================
+SECTION 3: PHASE 2 - PROCESSING PIPELINE VISUALIZATION
+================================================================================
+
+VISUAL POSITION: Center column, entire height
+
+3.1 PREPROCESSING PIPELINE (5 STEPS)
+  
+  Visual Layout: Vertical cascade of 5 boxes with connecting arrows
+  Position: Top of Phase 2
+  Total height: 300px
+  Width per step: 180px
+  
+  STEP 1 BOX: "LOAD IMAGE RGB"
+    Position: Top
+    Size: 160px × 50px
+    Background: Light blue (#E3F2FD)
+    Border: 2px solid #2196F3
+    Content:
+      Title: "Step 1: Load Image" (bold, 11px)
+      Formula: "PIL.Image.open()" (9px, monospace)
+      Output: "RGB Channels" (9px, italic)
+    Icon: Image file icon (16px, top-left)
+  
+  ARROW 1: Connecting Step 1 to Step 2
+    Type: Downward arrow
+    Color: #FFC107 (Amber)
+    Width: 3px
+    Label: "(H, W, 3)" (8px, right-aligned)
+    Distance: 20px
+  
+  STEP 2 BOX: "RESIZE WITH PADDING"
+    Position: Below Step 1
+    Size: 160px × 50px
+    Background: Light blue (#E3F2FD)
+    Border: 2px solid #2196F3
+    Content:
+      Title: "Step 2: Resize" (bold, 11px)
+      Formula: "224 × 224 preserve aspect" (9px, monospace)
+      Output: "Center-padded (0,0,0)" (9px, italic)
+    Icon: Resize icon (16px, top-left)
+  
+  ARROW 2: Connecting Step 2 to Step 3
+    Type: Downward arrow
+    Color: #FFC107
+    Width: 3px
+    Label: "(224, 224, 3)" (8px, right-aligned)
+    Distance: 20px
+  
+  STEP 3 BOX: "CONVERT TO NUMPY"
+    Position: Below Step 2
+    Size: 160px × 50px
+    Background: Light blue (#E3F2FD)
+    Border: 2px solid #2196F3
+    Content:
+      Title: "Step 3: CHW Format" (bold, 11px)
+      Formula: "HWC → CHW conversion" (9px, monospace)
+      Output: "(3, 224, 224) float32" (9px, italic)
+    Icon: Array/tensor icon (16px, top-left)
+  
+  ARROW 3: Connecting Step 3 to Step 4
+    Type: Downward arrow
+    Color: #FFC107
+    Width: 3px
+    Label: "[0.0, 1.0]" (8px, right-aligned)
+    Distance: 20px
+  
+  STEP 4 BOX: "IMAGENET NORMALIZE"
+    Position: Below Step 3
+    Size: 160px × 50px
+    Background: Light blue (#E3F2FD)
+    Border: 2px solid #2196F3
+    Content:
+      Title: "Step 4: Normalize" (bold, 11px)
+      Formula: "(x - mean) / std" (9px, monospace)
+      Output: "Range [-2.5, 2.5]" (9px, italic)
+    Icon: Normalization icon (16px, top-left)
+  
+  ARROW 4: Connecting Step 4 to Step 5
+    Type: Downward arrow
+    Color: #FFC107
+    Width: 3px
+    Label: "Normalized" (8px, right-aligned)
+    Distance: 20px
+  
+  STEP 5 BOX: "TO TORCH TENSOR"
+    Position: Below Step 4
+    Size: 160px × 50px
+    Background: Light blue (#E3F2FD)
+    Border: 2px solid #2196F3
+    Content:
+      Title: "Step 5: Tensor" (bold, 11px)
+      Formula: "torch.FloatTensor" (9px, monospace)
+      Output: "Ready for backbone" (9px, italic)
+    Icon: PyTorch logo (16px, top-left)
+
+3.2 FEATURE EXTRACTION - BACKBONE
+  
+  Visual Layout: Large central box with internal components
+  Position: Middle of Phase 2
+  Size: 200px × 100px
+  Background: Linear gradient (purple top to indigo bottom)
+  Border: 3px solid #9C27B0, rounded corners (8px)
+  
+  Content sections:
+    Header: "MobileNetV3-Small" (bold, 13px, white)
+    
+    Internal architecture representation:
+      Line 1: "927,008 frozen parameters" (9px, gray)
+      Line 2: "Depthwise separable convolutions" (9px, gray)
+      Line 3: "Input: (224, 224, 3) tensors" (9px, gray)
+      Line 4: "Output: (576) feature vectors" (9px, gray)
+    
+    Processing steps (mini-diagram):
+      Conv Layer → Max Pool → Inverted Residual × 16 → Global Avg Pool
+      All in white, 8px font, on purple background
+    
+    Process indicator: "FROZEN" badge (red, top-right corner)
+  
+  Left-side label: "Backbone"
+  Right-side label: "Feature Extractor"
+
+3.3 FEATURE DIMENSION REPRESENTATION
+  
+  Visual element: Tensor shape animation/representation
+  Position: Below backbone box
+  
+  Shape visualization:
+    "(batch_size, 576) feature matrix"
+    Shown as 2D grid: 20px × 15px cells
+    Cell color: Light purple (#F3E5F5)
+    Grid size shown: "N × 576"
+    Where N = number of images in batch
+    
+  Dimensions displayed:
+    Width label: "576 feature dimensions" (8px)
+    Height label: "Variable batch size" (8px)
+    
+  Sample value display: "0.34, -1.12, 0.89, ..." (monospace, 8px)
+
+3.4 CLASSICAL HEADS - 4 PARALLEL PATHS
+  
+  Visual Layout: 4 boxes arranged horizontally
+  Position: Bottom of Phase 2
+  Total width: 700px (for all 4 heads)
+  Individual box size: 150px × 120px
+  Spacing: 20px between boxes
+  
+  HEAD 1: LOGISTIC REGRESSION
+    Position: Far left
+    Background: Light green (#E8F5E9)
+    Border: 2px solid #4CAF50
+    Content:
+      Title: "LogisticRegression" (bold, 11px, dark green)
+      Params: "36,351" (large, 14px, bold)
+      Training: "< 1 minute" (9px)
+      Solver: "lbfgs" (9px, monospace)
+      Algo: "Linear classifier" (8px, italic)
+      Output: "(batch, 63) logits" (8px)
+    Icon: Linear model icon (16px, top-right)
+    Status: "sklearn" badge (blue, bottom)
+  
+  HEAD 2: SVM (RBF KERNEL)
+    Position: Center-left
+    Background: Light green (#E8F5E9)
+    Border: 2px solid #4CAF50
+    Content:
+      Title: "SVM (RBF)" (bold, 11px, dark green)
+      Params: "36,351" (large, 14px, bold)
+      Training: "2-5 minutes" (9px)
+      Kernel: "RBF" (9px, monospace)
+      Algo: "Support Vector Machine" (8px, italic)
+      Output: "(batch, 63) logits" (8px)
+    Icon: SVM decision boundary icon (16px, top-right)
+    Status: "sklearn" badge (blue, bottom)
+    Note: "Best performer" (red, bottom-left)
+  
+  HEAD 3: SVM (LINEAR KERNEL)
+    Position: Center-right
+    Background: Light green (#E8F5E9)
+    Border: 2px solid #4CAF50
+    Content:
+      Title: "SVM (Linear)" (bold, 11px, dark green)
+      Params: "36,351" (large, 14px, bold)
+      Training: "1-3 minutes" (9px)
+      Kernel: "Linear" (9px, monospace)
+      Algo: "Linear SVM" (8px, italic)
+      Output: "(batch, 63) logits" (8px)
+    Icon: Linear SVM icon (16px, top-right)
+    Status: "sklearn" badge (blue, bottom)
+    Note: "Most stable" (cyan, bottom-left)
+  
+  HEAD 4: DENSE MLP
+    Position: Far right
+    Background: Light orange (#FFE0B2)
+    Border: 2px solid #FF9800
+    Content:
+      Title: "Dense MLP" (bold, 11px, dark orange)
+      Params: "41,023" (large, 14px, bold)
+      Training: "1-2 minutes" (9px)
+      Architecture: "576→64→63" (9px, monospace)
+      Activation: "ReLU + Dropout" (8px, italic)
+      Output: "(batch, 63) logits" (8px)
+    Icon: Neural network icon (16px, top-right)
+    Status: "PyTorch" badge (red, bottom)
+  
+  Shared input arrow:
+    From feature vector (576-dim)
+    Splits into 4 arrows (one to each head)
+    Color: Amber (#FFC107)
+    Width: 3px
+
+3.5 FEATURE EXTRACTION FLOW
+  
+  From 25,962 images:
+    Training set: ~1600 images per fold
+    Validation set: ~400 images per fold
+    
+  Visual representation:
+    Vertical timeline on left side
+    Tick 1: "Load image" (0%)
+    Tick 2: "Preprocess" (20%)
+    Tick 3: "Extract features" (40%)
+    Tick 4: "Train head 1" (50%)
+    Tick 5: "Train head 2" (65%)
+    Tick 6: "Train head 3" (80%)
+    Tick 7: "Train head 4" (90%)
+    Tick 8: "Save results" (100%)
+
+
+================================================================================
+SECTION 4: PHASE 3 - QUANTUM INTEGRATION (FUTURE)
+================================================================================
+
+VISUAL POSITION: Right column (faded/future state indicator)
+
+4.1 QUANTUM HEADS - PREVIEW VISUALIZATION
+  
+  Visual Layout: Similar to Phase 2 but with quantum elements
+  Position: Right column, top section
+  Appearance: Semi-transparent (50% opacity) to indicate future
+  Border: Dashed line indicating "Future Phase"
+  
+  QUANTUM HEAD 1: QUANTUM-CLASSICAL HYBRID
+    Position: Right column, top
+    Background: Light orange (#FFE0B2) with "Future" watermark
+    Border: 3px dashed #FF9800
+    Content:
+      Title: "Quantum-Classical Hybrid" (bold, 11px)
+      Architecture: "Classical → Quantum → Classical" (9px)
+      Qubits: "4-8 parameterized qubits" (9px)
+      Framework: "Qiskit 0.39+" (9px, monospace)
+      Parameters: "~36K trainable params" (9px)
+    
+    Internal flow:
+      1. Classical projection: 576 → 64 dims
+      2. Quantum embedding: 64 → 8 qubits
+      3. Quantum circuit: Parameterized circuit
+      4. Measurement: Observable measurement
+      5. Classical decoder: → 63 classes
+    
+    Visual components:
+      Classical box (left): "576 → 64" in gray
+      Quantum box (center): "Quantum Circuit" in orange with Qiskit logo
+      Classical box (right): "→ 63 classes" in gray
+      Arrows between: Curved, labeled with dimensions
+
+4.2 QUANTUM CIRCUIT REPRESENTATION
+  
+  Visual element: Simplified quantum circuit diagram
+  Position: Inside quantum head box
+  
+  Circuit representation:
+    Qubits: 8 horizontal lines (quantum states)
+    Gates: X, RY(θ), CNOT, RZ(θ) gates shown as boxes/crosses
+    Measurement: Measurement symbols (semicircles) at end
+    
+  Appearance:
+    Clean, technical look
+    Color: Orange and cyan
+    Size: Fits within head box
+
+
+================================================================================
+SECTION 5: RESULTS AND OUTPUT VISUALIZATION
+================================================================================
+
+VISUAL POSITION: Right column, lower section
+
+5.1 METRICS DISPLAY
+  
+  Visual Layout: 4 metric cards in 2×2 grid
+  Position: Lower right of diagram
+  Size: 120px × 80px each
+  
+  METRIC 1: ACCURACY
+    Header: "Accuracy" (11px, bold)
+    Value: "48.7%" (24px, bold, cyan)
+    Subtext: "SVM RBF Best" (8px)
+    Visual: Circular progress (60% filled, green)
+  
+  METRIC 2: F1-SCORE
+    Header: "F1-Score" (11px, bold)
+    Value: "0.487" (24px, bold, cyan)
+    Subtext: "Weighted Average" (8px)
+    Visual: Bar indicator (70% filled, blue)
+  
+  METRIC 3: PRECISION
+    Header: "Precision" (11px, bold)
+    Value: "0.491" (24px, bold, cyan)
+    Subtext: "Per-class weighted" (8px)
+    Visual: Bar indicator (68% filled, green)
+  
+  METRIC 4: RECALL
+    Header: "Recall" (11px, bold)
+    Value: "0.487" (24px, bold, cyan)
+    Subtext: "Per-class weighted" (8px)
+    Visual: Bar indicator (70% filled, blue)
+
+5.2 RESULTS COMPARISON TABLE
+  
+  Visual Layout: 5 column × 5 row table
+  Position: Bottom-right of diagram
+  Size: 180px × 100px
+  
+  Columns:
+    1. Head Type
+    2. Accuracy %
+    3. F1 Score
+    4. Precision
+    5. Recall
+  
+  Rows:
+    1. LogisticRegression | 42.3 | 0.423 | 0.425 | 0.423
+    2. SVM RBF | 48.7 | 0.487 | 0.491 | 0.487
+    3. SVM Linear | 38.2 | 0.382 | 0.385 | 0.382
+    4. Dense MLP | 45.1 | 0.451 | 0.454 | 0.451
+  
+  Table styling:
+    Header row: Dark gray (#424242) with white text
+    Data rows: Alternating white and light gray
+    Best performer row: Highlighted in cyan
+    Font: Monospace, 8px
+
+5.3 CROSS-FOLD CONSISTENCY
+  
+  Visual element: Line chart showing accuracy across 5 folds
+  Position: Right side, below metrics
+  Size: 150px × 80px
+  
+  Chart representation:
+    X-axis: Fold 0, 1, 2, 3, 4, Mean
+    Y-axis: Accuracy % (0-100)
+    
+  Lines for each head:
+    LR: Blue line, markers at 42, 42, 43, 42, 42 (mean: 42.2)
+    SVM-RBF: Red line, markers at 49, 49, 49, 49, 49 (mean: 48.9)
+    SVM-Linear: Green line, markers at 38, 38, 38, 38, 38 (mean: 38.2)
+    MLP: Orange line, markers at 45, 46, 45, 45, 46 (mean: 45.3)
+  
+  Error bars: Show ±1 std dev around mean
+  Legend: Small color-coded legend showing head types
+
+
+================================================================================
+SECTION 6: DATA FLOW ARROWS AND CONNECTIONS
+================================================================================
+
+6.1 MAIN DATA FLOW ARROWS
+
+  ARROW 1: Images to Preprocessing
+    Source: Phase 1 image stack
+    Target: Preprocessing Step 1
+    Color: Amber (#FFC107)
+    Width: 4px
+    Label: "25,962 Images" (10px, bold)
+    Arrow style: Thick with rounded ends
+    Distance: 60px
+  
+  ARROW 2: Preprocessing to Backbone
+    Source: Preprocessing Step 5
+    Target: Backbone input
+    Color: Amber (#FFC107)
+    Width: 4px
+    Label: "(Batch, 3, 224, 224)" (9px)
+    Arrow style: Thick with rounded ends
+    Distance: 40px
+  
+  ARROW 3: Backbone to Features
+    Source: Backbone output
+    Target: Feature vector representation
+    Color: Cyan (#00BCD4)
+    Width: 4px
+    Label: "(Batch, 576)" (9px)
+    Arrow style: Thick with rounded ends
+    Distance: 30px
+  
+  ARROW 4: Features to Heads (Splitting)
+    Source: Feature vector
+    Target: 4 head boxes
+    Color: Amber (#FFC107)
+    Width: 3px each
+    Label: "Frozen features" (9px)
+    Arrow style: Splits into 4 arrows
+    Distance: 50px
+  
+  ARROW 5: Heads to Results
+    Source: 4 head boxes
+    Target: Metrics cards
+    Color: Cyan (#00BCD4)
+    Width: 3px
+    Label: "Predictions" (9px)
+    Arrow style: Converges to results
+    Distance: 60px
+
+6.2 FEEDBACK AND ITERATION ARROWS
+
+  ARROW 6: Results back to Configuration (optional, dashed)
+    Source: Metrics cards
+    Target: Head selection
+    Color: Gray (#BDBDBD)
+    Width: 2px
+    Style: Dashed
+    Label: "Hyperparameter tuning" (8px, italic)
+    Purpose: Shows optional feedback loop
+
+
+================================================================================
+SECTION 7: LABELS, ANNOTATIONS, AND TEXT
+================================================================================
+
+7.1 PHASE LABELS
+
+  PHASE 1 LABEL:
+    Position: Top-left, above Phase 1 section
+    Text: "PHASE 1: DATA FOUNDATION" (16px, bold)
+    Color: #1976D2 (Blue)
+    Background: Subtle light blue box
+    Border: None
+    Styling: Bold, uppercase, 100% opacity
+  
+  PHASE 2 LABEL:
+    Position: Top-center, above Phase 2 section
+    Text: "PHASE 2: CLASSICAL BASELINE TRAINING" (16px, bold)
+    Color: #7B1FA2 (Deep Purple)
+    Background: Subtle light purple box
+    Border: None
+    Styling: Bold, uppercase, 100% opacity
+  
+  PHASE 3 LABEL:
+    Position: Top-right, above Phase 3 section
+    Text: "PHASE 3: QUANTUM INTEGRATION (Future)" (14px, bold)
+    Color: #E65100 (Deep Orange)
+    Background: Subtle light orange box, dashed border
+    Border: Dashed
+    Styling: Bold, uppercase, 50% opacity
+
+7.2 COMPONENT LABELS
+
+  All component boxes should have:
+    - Clear title at top (11-13px, bold)
+    - Key metrics/parameters below (9px, regular)
+    - Small icon in corner (16px × 16px)
+    - Unit/dimension labels (8px, italic)
+
+7.3 DIMENSIONAL ANNOTATIONS
+
+  Show key dimensions throughout:
+    Images: 1440×1080, (3, 224, 224), 576-dim, (batch, 63)
+    Placed near relevant arrows/components
+    Font: 8px, monospace, centered on arrows
+
+7.4 LEGEND
+
+  Position: Bottom-left corner
+  Size: 150px × 100px
+  Background: White box with border
+  
+  Legend items:
+    1. Blue boxes = Data/Input
+    2. Purple boxes = Processing/Computation
+    3. Green boxes = Results/Output
+    4. Amber arrows = Data flow
+    5. Cyan arrows = Feature flow
+    6. Dashed elements = Future/Optional
+
+7.5 STATISTICS BOX
+
+  Position: Bottom-right corner
+  Size: 160px × 120px
+  Background: White box with subtle shadow
+  Border: 2px solid #BDBDBD
+  
+  Content:
+    "Project Statistics:"
+    "─────────────────"
+    "Total Images: 25,962"
+    "Species: 7"
+    "Conditions: 9"
+    "Classes: 63"
+    "Folds: 5"
+    "Backbone: MobileNetV3-Small"
+    "Heads: 4 classical models"
+    "Status: Phase 2 (85% complete)"
+  
+  Font: 8px, monospace
+  Text color: #333333
+
+
+================================================================================
+SECTION 8: VISUAL STYLE AND RENDERING DETAILS
+================================================================================
+
+8.1 COMPONENT STYLING
+
+  BOXES/CONTAINERS:
+    Background: White (#FFFFFF)
+    Border: 2px solid (color-coded)
+    Border-radius: 6px corners
+    Shadow: Drop shadow 0 4px 12px rgba(0,0,0,0.15)
+    Padding: 15px
+    Font: 'Segoe UI', sans-serif
+  
+  CONNECTORS/ARROWS:
+    Type: Straight or curved bezier curves
+    Endpoint: Triangle arrowheads (8px)
+    Weight: 3-4px for main flows, 2px for secondary
+    Dash: Solid or dashed (2px gap) for optional
+    Smoothing: Rounded corners at bends
+  
+  TEXT:
+    Primary: 14px, bold, #212121
+    Secondary: 12px, regular, #666666
+    Tertiary: 10px, regular, #999999
+    Code: 9px, monospace, #1976D2
+    
+  ICONS:
+    Size: 16×16px, 24×24px, or 32×32px as needed
+    Style: Simple, flat, line-based (not filled)
+    Color: Match component color scheme
+    Sources: Material Design Icons, custom SVG
+
+8.2 SPATIAL ORGANIZATION
+
+  ALIGNMENT:
+    Center all text within boxes
+    Align component centers vertically within rows
+    Use 20px consistent spacing between components
+    Align arrows to component centers
+  
+  HIERARCHY:
+    Main phases at top (Phase 1, 2, 3)
+    Major components at middle level
+    Detailed elements at bottom
+    Supporting info (legend, stats) at corners
+
+8.3 VISUAL EMPHASIS
+
+  ACTIVE/IMPORTANT:
+    Bright colors (#FF9800, #00BCD4, #4CAF50)
+    Thick borders (3-4px)
+    Drop shadows
+    Bold text
+  
+  SECONDARY/BACKGROUND:
+    Muted colors (#BDBDBD, #E0E0E0)
+    Thin borders (1-2px)
+    No shadows
+    Regular text
+  
+  FUTURE/DISABLED:
+    Dashed borders
+    50% opacity
+    Gray color (#BDBDBD)
+    Italic text
+
+8.4 VISUAL FLOW
+
+  The diagram should guide eye left to right:
+    1. START: Look at Phase 1 (data)
+    2. FLOW: Follow arrows through Phase 2 (processing)
+    3. FOCUS: Land on metrics/results on right
+    4. EXPLORE: See Phase 3 (future)
+    5. VERIFY: Check legend and statistics
+
+
+================================================================================
+SECTION 9: DETAILED COMPONENT DESCRIPTIONS FOR RENDERING
+================================================================================
+
+9.1 IMAGE PREPROCESSING PIPELINE VISUAL
+
+  Show as vertical flowchart:
+  
+  [ Raw Image 1440×1080 ]
+           ↓
+  [ Load as RGB (PIL) ]
+           ↓
+  [ Resize to 224×224 ]
+  [ with padding ]
+           ↓
+  [ Convert HWC→CHW ]
+  [ (3, 224, 224) ]
+           ↓
+  [ ImageNet Normalize ]
+  [ (val - mean) / std ]
+           ↓
+  [ PyTorch Tensor ]
+  [ float32, ready ]
+
+  Style:
+    Each step in rounded rectangle
+    Arrows showing data transformation
+    Dimension changes shown on right
+    Arrow width increases slightly to show data volume
+
+9.2 BACKBONE VISUALIZATION
+
+  Show as box with internal components:
+
+  ┌─────────────────────────────────┐
+  │ MobileNetV3-Small               │
+  │ (Frozen: requires_grad = False) │
+  │                                 │
+  │ Conv 1 → Depthwise Sep Conv ×16 │
+  │ → Max Pool → Inverted Residuals │
+  │ → Global Avg Pool               │
+  │                                 │
+  │ Parameters: 927,008             │
+  │ Input: (B, 3, 224, 224)         │
+  │ Output: (B, 576)                │
+  │                                 │
+  │ Status: FROZEN ✓                │
+  └─────────────────────────────────┘
+
+  Style:
+    Box with purple gradient
+    Internal structure shown with simplified layer flow
+    Frozen badge prominent
+    Input/output dimensions clearly marked
+
+9.3 HEADS COMPARISON VISUAL
+
+  4 boxes side-by-side showing:
+
+  HEAD 1: LR              HEAD 2: SVM-RBF
+  ┌──────────────┐        ┌──────────────┐
+  │ LR           │        │ SVM (RBF)    │ ← Best
+  │ 36,351 p     │        │ 36,351 p     │
+  │ <1 min       │        │ 2-5 min      │
+  │ sklearn      │        │ sklearn      │
+  │ Acc: 42.3%   │        │ Acc: 48.7%   │
+  └──────────────┘        └──────────────┘
+
+  HEAD 3: SVM-Linear      HEAD 4: MLP
+  ┌──────────────┐        ┌──────────────┐
+  │ SVM (Linear) │        │ MLP          │
+  │ 36,351 p     │        │ 41,023 p     │
+  │ 1-3 min      │        │ 1-2 min      │
+  │ sklearn      │        │ PyTorch      │
+  │ Acc: 38.2%   │        │ Acc: 45.1%   │
+  └──────────────┘        └──────────────┘
+
+  Styling:
+    Color-coded boxes (green for sklearn, orange for PyTorch)
+    Best performer highlighted with glow/border
+    Metrics shown clearly
+    Parameter counts in large font
+
+9.4 FEATURE VECTOR REPRESENTATION
+
+  Show as matrix visualization:
+
+  Feature Matrix (N × 576)
+  ┌─────────────────────────────────┐
+  │ Sample 1: [0.34, -1.12, 0.89...] │
+  │ Sample 2: [0.21, 0.56, -0.43...] │
+  │ Sample 3: [-0.12, 0.78, 0.55...] │
+  │ ...                              │
+  │ Sample N: [0.67, -0.23, 0.31...] │
+  │                                  │
+  │ Shape: (N, 576)                  │
+  │ Dtype: float32                   │
+  │ Range: [-2.5, 2.5]               │
+  └─────────────────────────────────┘
+
+  Styling:
+    Light purple background
+    Monospace font for numbers
+    Dimension labels clear
+    Sample ellipsis showing more data
+
+
+================================================================================
+SECTION 10: OVERALL DIAGRAM LAYOUT GRID
+================================================================================
+
+GRID STRUCTURE (1920 × 1080 canvas):
+
+┌─────────────────────────────────────────────────────────────────┐
+│                   QMEDLEAFNET PIPELINE ARCHITECTURE             │
+└─────────────────────────────────────────────────────────────────┘
+
+TOP SECTION (0-100px):
+┌────────────────────────────────────────────────────────────┐
+│ Title: "QMedLeafNet: ML Pipeline Architecture"             │
+│ Subtitle: "Medicinal Plant Leaf Health Detection"          │
+│ Phase indicators: [Phase 1] [Phase 2] [Phase 3]            │
+└────────────────────────────────────────────────────────────┘
+
+MAIN SECTION (100-950px):
+┌─────────────────┬──────────────────────┬─────────────────┐
+│ PHASE 1         │ PHASE 2              │ PHASE 3         │
+│ (0-640px)       │ (640-1280px)         │ (1280-1920px)   │
+│                 │                      │                 │
+│ Data Input      │ Processing Pipeline  │ Quantum Future  │
+│ - Raw Images    │ - Preprocessing      │ - Quantum Heads │
+│ - Species       │ - Backbone           │ - Hybrid Models │
+│ - Conditions    │ - Classical Heads    │ - Benchmarking  │
+│ - Splits        │                      │                 │
+└─────────────────┴──────────────────────┴─────────────────┘
+
+BOTTOM SECTION (950-1080px):
+┌────────────────────────────────────────────────────────────┐
+│ Legend           Results Display      Statistics            │
+│ - Data           - Metrics           - Total images        │
+│ - Processing     - Comparison        - Parameters          │
+│ - Results        - Cross-fold        - Completion         │
+└────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+SECTION 11: RENDERING INSTRUCTIONS FOR IMAGE GENERATION
+================================================================================
+
+11.1 FOR DALL-E / MIDJOURNEY / IMAGE GENERATORS
+
+Prompt template to give to image generator:
+
+"Generate a comprehensive technical architecture diagram showing:
+1. Three vertical sections (Phase 1, 2, 3) arranged left to right
+2. Left section (blue): Data showing 25,962 images, 7 species, 9 conditions in organized grid
+3. Center section (purple): Processing pipeline with 5 preprocessing steps flowing downward,
+   then MobileNetV3-Small backbone, then 4 parallel classical ML heads (LR, SVM-RBF, SVM-Linear, MLP)
+4. Right section (green): Results showing performance metrics and cross-fold comparison
+5. Amber arrows showing data flow between sections
+6. All components labeled with dimensions: 1440×1080, 224×224, (3,224,224), 576-dim, 63-class
+7. Color coding: Blue for data, Purple for computation, Green for results
+8. Include parameter counts for each head
+9. Show training times for each component
+10. Add legends, statistics box, and title
+11. Professional technical style, high resolution, 1920×1080 aspect ratio"
+
+11.2 FOR GRAPHVIZ / MERMAID
+
+Use the Mermaid code structure already provided in prompt.txt diagrams
+Convert all connections to Mermaid node syntax
+Color each section appropriately
+Add labels to all edges showing dimensions
+
+11.3 FOR CUSTOM RENDERING (Python + Matplotlib/Plotly)
+
+Use coordinates based on grid structure above:
+- Phase 1 section: x: 0-640
+- Phase 2 section: x: 640-1280
+- Phase 3 section: x: 1280-1920
+- Vertical spacing: 100px between major components
+- Use matplotlib patches for boxes
+- Use matplotlib arrows for connections
+- Use text annotations for labels
+
+11.4 FOR SVG GENERATION
+
+Create SVG with proper structure:
+- Define color gradients in <defs>
+- Use <rect> for boxes with proper styling
+- Use <path> for curved arrows
+- Use <text> for all labels
+- Use <g> groups for logical sections
+- Apply transforms for positioning
+
+
+================================================================================
+SECTION 12: STEP-BY-STEP IMAGE GENERATION GUIDE
+================================================================================
+
+STEP 1: PREPARE CANVAS
+  Create 1920 × 1080px canvas
+  Background: White (#FFFFFF)
+  Set DPI: 300 for high quality
+
+STEP 2: DRAW GRID AND GUIDES (Optional, can be hidden)
+  Draw faint grid lines at 40px intervals
+  This helps with alignment
+
+STEP 3: DRAW PHASE 1 SECTION
+  3.1: Draw title "PHASE 1: DATA FOUNDATION" at top
+  3.2: Draw image stack (120px × 120px) at (80, 150)
+  3.3: Draw species circle (140px diameter) at (200, 300)
+  3.4: Draw conditions grid (150px × 150px) at (180, 480)
+  3.5: Draw data split bar at (80, 680)
+  3.6: Draw manifest files at (40, 200)
+
+STEP 4: DRAW CONNECTIONS FROM PHASE 1 TO PHASE 2
+  4.1: Draw amber arrow from data split to Phase 2
+  4.2: Label with "25,962 Images"
+
+STEP 5: DRAW PHASE 2 SECTION
+  5.1: Draw title "PHASE 2: CLASSICAL BASELINE TRAINING"
+  5.2: Draw 5 preprocessing steps vertically (160px × 50px each)
+  5.3: Draw arrows between preprocessing steps
+  5.4: Draw backbone box (200px × 100px)
+  5.5: Draw feature vector representation
+  5.6: Draw 4 head boxes (150px × 120px each) horizontally
+  5.7: Draw connecting arrows between all components
+
+STEP 6: DRAW PHASE 3 SECTION (FADED)
+  6.1: Set opacity to 50%
+  6.2: Draw quantum head visualization (similar to Phase 2)
+  6.3: Draw dashed border to indicate future
+  6.4: Add "FUTURE" watermark
+
+STEP 7: DRAW RESULTS SECTION
+  7.1: Draw 4 metric cards (120px × 80px each)
+  7.2: Draw comparison table (180px × 100px)
+  7.3: Draw cross-fold consistency chart (150px × 80px)
+
+STEP 8: DRAW LEGEND AND STATISTICS
+  8.1: Draw legend box at bottom-left
+  8.2: Draw statistics box at bottom-right
+
+STEP 9: FINAL TOUCHES
+  9.1: Add title and subtitle at top
+  9.2: Verify all text is readable
+  9.3: Check color contrast
+  9.4: Add shadows and depth effects
+  9.5: Export at 1920 × 1080 resolution
+
+
+================================================================================
+SECTION 13: SPECIFIC MEASUREMENTS AND COORDINATES
+================================================================================
+
+All coordinates relative to 1920 × 1080 canvas:
+
+PHASE 1 ELEMENTS:
+  Title: (320, 50)
+  Image stack: (100, 180) - 120×120px
+  Species circle: (180, 320) - 140px diameter
+  Conditions grid: (150, 480) - 150×150px
+  Data split bar: (80, 680) - 200×40px
+  Manifest files: (40, 200) - 60×80px stack
+
+PHASE 2 ELEMENTS:
+  Title: (960, 50)
+  Preprocessing step 1: (700, 150) - 160×50px
+  Preprocessing step 2: (700, 220) - 160×50px
+  Preprocessing step 3: (700, 290) - 160×50px
+  Preprocessing step 4: (700, 360) - 160×50px
+  Preprocessing step 5: (700, 430) - 160×50px
+  Backbone box: (900, 250) - 200×100px
+  Feature vector: (900, 370) - 150×60px
+  Head 1 (LR): (680, 580) - 150×120px
+  Head 2 (SVM-RBF): (900, 580) - 150×120px
+  Head 3 (SVM-Linear): (1120, 580) - 150×120px
+  Head 4 (MLP): (1340, 580) - 150×120px
+
+PHASE 3 ELEMENTS:
+  Title: (1640, 50)
+  Quantum head: (1580, 180) - 200×120px
+  Quantum circuit: (1580, 320) - 180×100px
+
+RESULTS ELEMENTS:
+  Metric 1: (1520, 550) - 120×80px
+  Metric 2: (1680, 550) - 120×80px
+  Metric 3: (1520, 680) - 120×80px
+  Metric 4: (1680, 680) - 120×80px
+
+LEGEND & STATS:
+  Legend box: (40, 920) - 150×100px
+  Statistics box: (1760, 920) - 160×120px
+
+
+================================================================================
+SECTION 14: COMPREHENSIVE RENDERING CHECKLIST
+================================================================================
+
+BEFORE FINALIZING IMAGE:
+
+☐ All three phase sections visible and properly labeled
+☐ Color scheme applied correctly (Blue/Purple/Green)
+☐ All data flow arrows present and labeled
+☐ Text readable (minimum 8px font)
+☐ Component dimensions shown (1440×1080, 224×224, etc.)
+☐ Head parameter counts displayed (36,351, 41,023)
+☐ Preprocessing pipeline all 5 steps visible
+☐ Backbone clearly marked as "Frozen"
+☐ 4 classical heads arranged and differentiated
+☐ Metrics and results visible on right
+☐ Legend complete and clear
+☐ Statistics box accurate
+☐ Shadows and depth effects present
+☐ Grid alignment verified
+☐ Phase 3 faded but visible
+☐ No overlapping elements
+☐ Consistent spacing throughout
+☐ Professional appearance
+☐ High contrast for readability
+☐ 1920 × 1080 resolution
+
+
+================================================================================
+END OF COMPREHENSIVE VISUAL ARCHITECTURE PROMPT
+================================================================================
+
+This prompt provides complete specifications for generating a professional,
+detailed pipeline architecture image. It includes:
+
+- All component locations and dimensions
+- Color scheme and visual styling
+- Data flow connections and labels
+- Precise measurements and coordinates
+- Rendering instructions for multiple tools
+- Step-by-step generation guide
+- Quality checklist
+
+An AI image generator given these specifications should produce a high-quality,
+comprehensive technical diagram suitable for:
+- Documentation
+- Presentations
+- Research papers
+- Project reports
+- Technical blogs
+- Education materials
+
+Last updated: May 14, 2026
+Status: Complete architecture specification for visual generation
+Target: Professional-grade pipeline visualization
