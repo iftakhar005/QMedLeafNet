@@ -1,0 +1,485 @@
+﻿Step-by-Step Execution Plan for the Revised Hybrid Quantum-Classical Medicinal Plant Health Project
+Executive summary
+This execution plan turns the revised project into asequenced research programwith hard gates at each stage, so that you do not spend weeks on quantum modeling before the dataset, split policy, and classical baselines are locked down correctly. The central idea from the revised project document is to treat the work as aleakage-safe, species-conditioned, parameter-matched benchmarkrather than a simple â€œCNN plus quantum headâ€ paper. That means the project should advance in the following order: dataset audit and parent-image grouping; leakage-safe grouped splits; backbone and classical baseline lock-in; bottleneck and species-conditioning implementation; VQC head sweeps at 4, 6, and 8 qubits; calibration and statistical testing; then only after that, noise-aware simulation, edge/Green-AI evaluation, robustness, and explainability. The dataset-specific constraints that drive this order are important: the Mendeley dataset contains1,981 original images,20,019 augmented images,seven species, and derived augmented folders, so evaluation can be badly inflated if augmented siblings leak across train and test. îˆ€fileciteîˆ‚turn1file0îˆ
+The most efficient way to complete the project is to operate withtwo tiers of experimentation. First, run a fast screening stage with the primary backboneMobileNetV3-Small, grouped splits, and classical/quantum heads on a tiny bottleneck space. Second, expand only the best-performing configurations to additional backbones, finite-shot and noisy simulations, and the deployment-oriented measurements. This is consistent with the revised documentâ€™s emphasis on fair comparisons, parameter matching, careful calibration, and realistic deployment caveats rather than overclaiming quantum advantage. îˆ€fileciteîˆ‚turn1file0îˆ
+A practical end state for a strong conference paper is: one held-out grouped test set; grouped 5-fold development cross-validation; classical baselines including logistic regression, SVMs, dense matched heads, and Fourier-feature controls; VQC heads including Ring-SE, ReUpload-Linear, and Local-TTN at 4/6/8 qubits; temperature-scaled calibration; paired statistical tests; latency and energy reporting; then one small noisy-simulation and real-device appendix. A journal version should extend that with robustness, explainability, and preferably a small out-of-distribution or field-style evaluation. îˆ€fileciteîˆ‚turn1file0îˆ
+Roadmap and milestone gates
+The project is best managed as a set ofmilestone-gated phases. The gate at the end of each phase should be treated as non-negotiable. If a gate fails, the right action is to fix the upstream issue rather than advancing and accumulating technical debt.
+gantt    title Suggested execution schedule from May 2026    dateFormat  YYYY-MM-DD    section Data foundation    Dataset download, license, audit           :a1, 2026-05-04, 10d    parent_leaf_id manifest and grouped splits :a2, after a1, 7d    section Baselines    Preprocessing and backbone sanity checks   :b1, 2026-05-18, 10d    Classical baseline sweep                   :b2, after b1, 12d    section Hybrid models    Bottleneck and FiLM conditioning           :c1, 2026-05-30, 7d    VQC implementation and ideal simulation    :c2, after c1, 21d    section Evaluation    Cross-validation, calibration, statistics  :d1, 2026-06-20, 21d    section Extensions    Noise-aware and real-device subset         :e1, 2026-07-10, 12d    Edge, Green-AI, robustness, explainability :e2, after e1, 18d    section Writing    Figures, release package, workshop paper   :f1, 2026-08-05, 21d    Conference or journal extension            :f2, after f1, 28d
+Milestone table
+Milestone
+Main deliverables
+Practical runtime estimate
+Acceptance criteria to move forward
+Data foundation locked
+Downloaded dataset, license note, metadata audit,parent_leaf_idmanifest
+2â€“4 days
+Every image maps to one original parent; no unresolved metadata collisions; label ontology frozen or explicitly flagged as provisional
+Split policy locked
+Held-out grouped test manifest plus grouped 5-fold development manifests
+1â€“2 days
+Zero parent overlap across splits; stratification report acceptable; manifests versioned and frozen
+Baseline foundation locked
+MobileNetV3-Small preprocessing works; one classical baseline exceeds random and converges stably
+3â€“5 days
+Sanity-check training curves look normal; feature dimensions verified; per-class confusion matrix plausible
+Classical benchmark locked
+LR, SVM, Dense-Matched, MLP-Small, Fourier-feature results on grouped CV
+4â€“7 days
+At least one strong classical baseline established; calibration and macro-F1 tables generated
+Hybrid benchmark locked
+Ring-SE, ReUpload-Linear, Local-TTN at q = 4/6/8; ideal simulation results
+1â€“3 weeks
+Training stable for at least 4- and 6-qubit models; parameter-matched result table complete
+Conference-grade evaluation locked
+Statistical tests, calibration, latency, energy, ablations, held-out test
+2â€“3 weeks
+Final model claim supported by test-set confidence intervals and fair controls
+Extension package locked
+Noise-aware simulation, small real-device run, robustness, explainability, reproducibility bundle
+2â€“4 weeks
+Journal-quality artifact package complete; all main figures regenerated from scripts
+This staging reflects the revised projectâ€™s emphasis on leakage prevention, parameter-matched fairness, deployment realism, and hardware-aware evaluation. îˆ€fileciteîˆ‚turn1file0îˆ
+Data foundation and leakage-safe preprocessing
+Dataset acquisition and license verification
+Start by treating the dataset as a research artifact that must be formally audited before any model is trained. The revised project document notes that the dataset is distributed on Mendeley Data underCC BY 4.0, includes original, augmented, and background-removed variants, and uses the original-image identity as the correct grouping unit for leakage-safe evaluation. îˆ€fileciteîˆ‚turn1file0îˆ
+A practical setup is:
+mkdir -p data/raw data/interim data/processed manifests reports# download manually or via dataset link from Mendeley Datasha256sum data/raw/* > reports/raw_checksums.txt
+Then create a dataset audit record with:
+dataset DOI and version
+downloaded date
+directory tree snapshot
+file counts by folder
+image size histogram
+metadata file names
+license text or a local copy of the dataset page summary
+Inputs:dataset archive, metadata tables, dataset documentation.Outputs:reports/data_audit.json,reports/raw_checksums.txt,reports/license_note.md.Checkpoint:counts of original, augmented, and background-removed folders match expectations from the dataset page.Acceptance criteria:no missing folders, corrupted-image rate below a very small threshold, and a written note confirming the license and dataset version. îˆ€fileciteîˆ‚turn1file0îˆ
+Parent-image grouping and metadata checks
+This is the most important data-engineering step in the entire project. The revised document explicitly argues that the correct grouping unit is theparent original leaf image, because pre-generated augmented images derive from those originals and must never be allowed to straddle split boundaries. îˆ€fileciteîˆ‚turn1file0îˆ
+Build a single master manifest with one row per file and at least these columns:
+Required column
+Purpose
+file_path
+Absolute or project-relative image path
+source_variant
+original / augmented / background_removed
+parent_leaf_id
+Original-image identity used for grouping
+species_label
+Species class
+condition_label
+Health-condition class
+split_eligible
+Whether image can be used for split definition
+width,height
+Audit fields
+hash
+Duplicate detection
+notes
+Exceptions, anomalies, unresolved items
+A good command pattern is:
+python tools/build_manifest.py \  --root data/raw \  --metadata data/raw/metadata.csv \  --out manifests/master_manifest.parquet
+Then run a dedicated integrity check:
+python tools/check_manifest.py \  --manifest manifests/master_manifest.parquet \  --report reports/manifest_check.md
+The integrity checker should verify:
+eachparent_leaf_idmaps to exactly one original image
+every augmented file maps to an existing original parent
+label agreement between originals and augmentations
+no duplicate hash collisions across supposedly different parents
+no impossible label combinations
+class counts by species, by condition, and by species Ã— condition
+Inputs:raw dataset, metadata, naming patterns.Outputs:versioned master manifest and audit report.Practical runtime:usually under a few hours on CPU, depending mostly on hashing.Acceptance criteria:zero parent-mapping errors; zero unresolved label conflicts; explicit report of final label ontology. If the metadata reveals a different final condition count than the provisional working assumption, freeze the corrected ontology now and recompute all later parameter tables accordingly. îˆ€fileciteîˆ‚turn1file0îˆ
+Grouped split construction and manifest freezing
+Useonly original images, or original/background-removed originals, to define split groups. The recommended default from the revised plan is a15% grouped held-out test setat the parent-image level andgrouped 5-fold cross-validationon the remaining85% development pool. If stratification by full species Ã— condition becomes unstable because a few combinations are too rare, stratify by condition and monitor species balance manually in a report. îˆ€fileciteîˆ‚turn1file0îˆ
+A clear generation pattern is:
+python tools/make_grouped_splits.py \  --manifest manifests/master_manifest.parquet \  --group-col parent_leaf_id \  --label-col species_condition \  --test-ratio 0.15 \  --folds 5 \  --seed 3407 \  --out-dir manifests/splits_v1
+Create the following immutable files:
+test_groups.csv
+dev_fold_0_train.csvanddev_fold_0_val.csv
+â€¦
+dev_fold_4_train.csvanddev_fold_4_val.csv
+split_report.md
+Never regenerate these after benchmarking has started unless you explicitly bump the experiment version.
+flowchart TD    A[Raw dataset and metadata] --> B[Master manifest]    B --> C[Assign parent_leaf_id]    C --> D[Grouped held-out test]    C --> E[Development pool]    E --> F[Grouped 5-fold CV]    F --> G[Train-only augmentation]    D --> H[Original-only final evaluation]
+Inputs:master manifest.Outputs:frozen split manifests plus class-balance report.Checkpoint:overlap test returns zero sharedparent_leaf_idvalues between any train, validation, and test partition.Acceptance criteria:parent overlap is exactly zero; every fold contains at least minimal support for all required evaluation classes; the split version is frozen and committed. îˆ€fileciteîˆ‚turn1file0îˆ
+Preprocessing and augmentation policy
+Use thebackground-removed imagesas the default source for core experiments, because the revised project argues that they reduce background confounding and retain the detached-leaf morphology at1440 Ã— 1080before resizing. The recommended default image pipeline isresize with aspect-ratio preservation plus paddingto224 Ã— 224, followed by standard ImageNet normalization for TorchVision backbones. The revised plan also recommends restrained, train-only augmentation after splitting: moderate rotation, flips, mild photometric changes, small Gaussian noise, and occasional blur or sharpening. îˆ€fileciteîˆ‚turn1file0îˆ
+Suggested implementation notes:
+resize longest side to 224
+center-pad the shorter side to 224
+use bilinear interpolation
+normalize with the pretrained modelâ€™s expected mean and standard deviation
+keep a â€œdebug modeâ€ that writes one grid of transformed examples per class
+A practical augmentation schedule is:
+rotation: Â±20Â°
+horizontal flip: probability 0.5
+vertical flip: probability 0.3 if biologically acceptable for the task
+brightness/contrast jitter: Â±10â€“15%
+Gaussian noise: small, low-probability
+blur or sharpening: low probability only
+Donotapply cutout, mixup, or strong color shifts in the first main experiment tier. They can be evaluated later as optional regularization, but they risk altering fine disease cues.
+Inputs:split manifests and original/background-removed images.Outputs:deterministic preprocessing config and train-only augmentation config.Practical runtime:one day to implement and visually validate.Acceptance criteria:transformed examples preserve lesion and morphology visibility; validation and test pipelines are augmentation-free except for deterministic resize/pad/normalize; augmented siblings are generated only within the training pipeline. îˆ€fileciteîˆ‚turn1file0îˆ
+Model implementation blueprint
+Backbone selection and feature extraction
+The revised project identifiesMobileNetV3-Smallas the primary deployment-oriented backbone because TorchVision reports2,542,856 parametersand0.06 GFLOPSfor it, making it the most suitable first-line backbone for the edge-oriented story. The alternative backbones areMobileNetV2at3,504,872 parametersand0.30 GFLOPS,EfficientNet-B0at5,288,548 parametersand0.39 GFLOPS, andResNet18at11,689,512 parametersand1.81 GFLOPSas a heavier reference model. The same revised document notes the feature dimensions you should use after pooling and before the original classifier: approximately576for MobileNetV3-Small,1280for MobileNetV2 and EfficientNet-B0, and512for ResNet18. îˆ€fileciteîˆ‚turn1file0îˆ
+A clean implementation strategy is:
+wrap each backbone in aFeatureExtractormodule
+exposeforward_features(x)that returns pooled features only
+exposefeature_dimas a property
+preserve the pretrained weights and transforms metadata in the experiment config
+A simple command pattern for the first sanity run is:
+python train_backbone_sanity.py \  --backbone mobilenet_v3_small \  --split manifests/splits_v1/dev_fold_0_train.csv \  --val manifests/splits_v1/dev_fold_0_val.csv
+Inputs:preprocessed images and split manifests.Outputs:working feature extractor modules, feature-dimension verification logs, and one sanity-check learning curve.Practical runtime:a few hours for setup and one quick run.Acceptance criteria:feature dimensions match expectations; model converges without exploding loss; a single backbone-plus-dense sanity model produces sensible confusion patterns. îˆ€fileciteîˆ‚turn1file0îˆ
+Bottleneck design and species conditioning
+The revised projectâ€™s strongest methodological addition is thespecies-conditioned health head. Implement this by projecting backbone featuresinto a small bottleneckwith, predicting species with an auxiliary classifier, then using the species prediction to modulate the bottleneck before the final health head. The project specifically recommends aFiLM-style species-conditioning mechanism. îˆ€fileciteîˆ‚turn1file0îˆ
+A practical formulation is:
+bottleneck:Linear(feature_dim, q)
+species head:Linear(q, 7)
+FiLM generator:
+gamma = Linear(7, q)
+beta = Linear(7, q)
+conditioned bottleneck:
+z_tilde = gamma(p_species) âŠ™ z + beta(p_species)
+Use a multitask objective:
+
+Start withas the default, then ablate. Keep the auxiliary loss active during both frozen-backbone and partial-unfreeze stages.
+Inputs:backbone features and species/condition labels.Outputs:bottlenecked representations, species logits, conditioned features.Checkpoint:the auxiliary species head should learn faster than the condition head and should not destabilize total training.Acceptance criteria:species auxiliary accuracy is meaningfully above random early in training; total-loss optimization remains stable; turning FiLM on does not create degenerate bottleneck collapse. The species-conditioning branch is worth keeping only if it helps macro-F1, calibration, or minority-class recall relative to the unconditioned version. îˆ€fileciteîˆ‚turn1file0îˆ
+VQC head implementations
+The revised design calls for three VQC families, each at4, 6, and 8 qubits:Ring-SE,ReUpload-Linear, andLocal-TTN. The revised document motivates Ring-SE via PennyLaneâ€™sStronglyEntanglingLayers, ReUpload-Linear via the data re-uploading literature, and Local-TTN via trainability arguments favoring shallow/local structures and local-cost reasoning. It also recommends measuringone Pauli-Z expectation per qubitand feeding the resulting-dimensional vector into a small linear readout to the health logits. îˆ€fileciteîˆ‚turn1file0îˆ
+A recommended practical specification is:
+VQC family
+q
+Encoding
+Entanglement pattern
+Depth
+Circuit-trainable parameters
+Readout
+Ring-SE
+4/6/8
+single-pass angle encoding of bottleneck values
+ring CNOT or CZ
+2 layers
+
+q Pauli-Z expectations â†’ linear head
+ReUpload-Linear
+4/6/8
+two data-reupload blocks
+linear chain CZ
+2 cycles
+
+q Pauli-Z expectations â†’ linear head
+Local-TTN
+4/6/8
+learnable scaled angle encoding
+local pairwise tree/block pattern
+2 shallow stages
+about
+local expectations â†’ linear head
+Recommended PennyLane notes:
+useqml.qnn.TorchLayerfor seamless PyTorch integration
+keep QNode signatures standardized across heads
+support both analytic expectation mode and finite-shot mode
+log effective circuit depth and two-qubit gate count automatically
+A clean module layout is:
+vqc_ring_se.py
+vqc_reupload_linear.py
+vqc_local_ttn.py
+quantum_readout.py
+hybrid_model.py
+Use reduced-domain initialization for trainable rotation parameters instead of sampling uniformly over the full circle, because the revised project cites recent work showing trainability benefits for reduced-domain initialization. îˆ€fileciteîˆ‚turn1file0îˆ
+flowchart LR    A[Input image] --> B[Backbone features h]    B --> C[Linear bottleneck z in R^q]    C --> D[Species auxiliary head]    D --> E[FiLM gamma and beta]    C --> E    E --> F[Conditioned bottleneck z_tilde]    F --> G1[Classical head]    F --> G2[VQC head]    G1 --> H[Condition logits]    G2 --> H    H --> I[Health loss]    D --> J[Species loss]    I --> K[Total loss]    J --> K
+Inputs:conditioned bottleneck vectors, split manifests, train config.Outputs:fully trainable hybrid heads in PyTorch.Practical runtime:one to several days to implement and validate, depending on framework familiarity.Acceptance criteria:all three VQC families train without runtime errors at q = 4; at least Ring-SE and ReUpload-Linear train stably at q = 6; forward pass and gradient checks pass on a small synthetic batch before any real experiment is launched. îˆ€fileciteîˆ‚turn1file0îˆ
+Matched classical baselines
+Do not move into serious hybrid claims until the matched classical controls are complete. The revised document is explicit that strong classical baselines are part of the novelty and fairness claim. The required family is:
+logistic regression
+linear SVM
+RBF SVM
+Dense-Matched
+MLP-Small
+Fourier-feature linear head as a quantum-inspired baseline. îˆ€fileciteîˆ‚turn1file0îˆ
+A practical layout is:
+classical shallow models trained on frozen bottleneck features with scikit-learn
+neural baselines trained in the same PyTorch training loop as the hybrids
+one shared bottleneck projection for fair parameter matching
+Use the following definitions:
+Dense-Matched:q -> q -> K
+MLP-Small:q -> 2q -> K
+Fourier-feature:fixed sinusoidal expansion of the-dimensional bottleneck, then linear readout
+Recommended implementation note: first run these baselines withcached frozen featuresto screen configurations quickly; then rerun the finalists in the full image pipeline so that the comparison to hybrid heads is end-to-end comparable.
+Inputs:bottleneck features and labels.Outputs:classical benchmark tables across q = 4/6/8.Practical runtime:minutes to a few hours per split once features are cached.Acceptance criteria:every baseline converges cleanly; the strongest classical baseline is clearly identified; no hybrid result will be interpreted without this table alongside it. îˆ€fileciteîˆ‚turn1file0îˆ
+Model comparison table
+The revised project already provides anillustrative parameter-matched comparisonfor the primary setup usingMobileNetV3-Small, afrozen backbone,7 species, and aprovisional 9-class health ontology. Keep the same table structure in your project notebook, but recompute it immediately if the metadata audit changes the final health-class count. îˆ€fileciteîˆ‚turn1file0îˆ
+Model
+q
+Head-only trainable params
+Total trainable params with MobileNetV3-Small primary setup
+Expected compute class
+Novelty contribution
+Logistic regression
+4 / 6 / 8
+144 / 208 / 272
+2,452 / 3,670 / 4,888
+Very low
+Strong linear control
+Dense-Matched
+4 / 6 / 8
+164 / 250 / 344
+2,472 / 3,712 / 4,960
+Very low
+Best parameter-matched dense control
+MLP-Small
+4 / 6 / 8
+220 / 346 / 488
+2,528 / 3,808 / 5,104
+Low
+Nonlinear classical control
+Fourier-feature
+4 / 6 / 8
+252 / 370 / 488
+2,560 / 3,832 / 5,104
+Low
+Tests spectral-bias explanation
+VQC Ring-SE
+4 / 6 / 8
+168 / 244 / 320
+2,476 / 3,706 / 4,936
+Low
+Standard hybrid baseline
+VQC ReUpload-Linear
+4 / 6 / 8
+160 / 232 / 304
+2,468 / 3,694 / 4,920
+Low
+Best theory-backed hybrid candidate
+VQC Local-TTN
+4 / 6 / 8
+159 / 231 / 303
+2,467 / 3,693 / 4,919
+Low
+Locality and trainability test
+ReUpload + feature fusion
+4 / 6 / 8
+addover ReUpload
+add 64 / 96 / 128
+Low
+Hybrid morphology/texture extension
+Treat these values as theplanning baselinefor resource allocation and fairness reporting, not as immutable numbers, because the exact total depends on the final health-class ontology and any slight architectural edits you make after the metadata audit. îˆ€fileciteîˆ‚turn1file0îˆ
+Training, evaluation, and ablations
+Training protocol and seed handling
+The revised project recommends a two-stage training strategy:
+stage one:freeze the entire backbone and train only the bottleneck, auxiliary species head, FiLM conditioning, and task head
+stage two:unfreeze only the final backbone stage and continue with a lower learning rate. îˆ€fileciteîˆ‚turn1file0îˆ
+A good default protocol is:
+optimizer:AdamW
+batch size: whatever fits comfortably; start moderate and keep the same across matching runs
+early stopping patience: 10â€“15 epochs on macro-F1 or NLL
+maximum epochs: 40â€“60 in frozen stage, 15â€“25 in partial-unfreeze stage
+seeds: at leastthree seedsfor every modelâ€“fold pair
+checkpoint criterion: best validation macro-F1, with calibration fitted afterward on the validation fold
+Recommended learning rates:
+frozen-stage neural heads:1e-3
+VQC and readout:5e-4or1e-3, depending on stability
+final-stage backbone unfreeze:1e-4or lower
+weight decay: modest, such as1e-4
+Suggested command pattern:
+python train.py \  --config configs/mnv3_reupload_q6.yaml \  --fold 0 \  --seed 3407
+Inputs:split manifests, model config, random seed.Outputs:checkpoints, learning curves, validation predictions, training logs.Practical runtime estimate:classical head-only sweeps can finish in hours; frozen-backbone full-image runs usually finish within part of a day; VQC runs at q â‰¤ 8 in ideal simulation are still manageable, but a full 5-fold Ã— 3-seed sweep across many heads can easily become a several-day to multi-week campaign depending on parallelism. The revised documentâ€™s hardware plan is realistic precisely because 4â€“8 qubits are small enough for tractable classical simulation, with runtime dominated more by repeated training passes than raw state size. îˆ€fileciteîˆ‚turn1file0îˆAcceptance criteria:validation curves are repeatably stable across at least two seeds; no severe divergence under the default initialization; frozen-stage winners are clear before you spend compute on the partial-unfreeze stage. îˆ€fileciteîˆ‚turn1file0îˆ
+Evaluation metrics, calibration, and statistical tests
+The minimum evaluation bundle from the revised project should be treated as mandatory:
+accuracy
+macro-F1
+per-class F1
+balanced accuracy
+negative log-likelihood
+Brier score
+expected calibration error
+trainable parameter count
+total parameter count
+classical FLOPs
+circuit depth, two-qubit gate count, shot budget
+batch-1 inference latency
+training energy and inference-energy proxy. îˆ€fileciteîˆ‚turn1file0îˆ
+For calibration, fittemperature scalingon the validation predictions for every probabilistic model, then report both raw and calibrated test metrics. That is directly aligned with the revised planâ€™s calibration requirement. îˆ€fileciteîˆ‚turn1file0îˆ
+A strong testing bundle is:
+paired bootstrapon the held-out test set for macro-F1, ECE, and Brier score; use 5,000 to 10,000 paired resamples
+McNemarâ€™s testfor pairwise accuracy comparison between the best hybrid head and the strongest classical control
+Wilcoxon signed-rank teston fold-seed paired validation or test-summary scores as a supplementary non-parametric check across repeated runs
+Keep the reporting discipline strict:
+only one held-out grouped test set for headline claims
+cross-validation is for model selection and uncertainty characterization
+statistical tests should be predeclared in the experiment plan
+Inputs:raw predictions, calibrated predictions, final test labels, run metadata.Outputs:tables of means, standard deviations, confidence intervals, and significance results.Practical runtime:usually modest; most cost is prediction collection, not the tests.Acceptance criteria:the final paper claim is backed by the held-out test set, not by a cherry-picked fold; every strong headline claim includes uncertainty or a formal paired test. îˆ€fileciteîˆ‚turn1file0îˆ
+Ablation matrix and experiment prioritization
+The revised project is very clear that the ablation matrix is where much of the paperâ€™s novelty actually resides. The required axes are: qubit count, encoding scheme, entanglement pattern, species conditioning on/off, feature fusion on/off, training regime, simulation mode, calibration on/off, and initialization strategy. îˆ€fileciteîˆ‚turn1file0îˆ
+A good prioritization matrix is:
+Priority
+Experiments
+Why they are mandatory or optional
+Must-run
+MobileNetV3-Small + all classical baselines + Ring-SE/ReUpload-Linear/Local-TTN at q = 4/6/8 + species conditioning on/off
+This is the core fairness and novelty package
+Must-run
+Grouped held-out test + grouped 5-fold CV + calibration + paired bootstrap
+Without this, the paperâ€™s claims are not rigorous
+Must-run
+Frozen stage plus limited final-stage unfreeze for the best 3â€“4 models
+Needed to show whether gains persist end-to-end
+Should-run
+MobileNetV2 and EfficientNet-B0 on shortlisted heads
+Supports generality across lightweight backbones
+Should-run
+Feature fusion with morphology/color/texture descriptors on best hybrid head
+Adds domain-specific novelty
+Should-run
+Finite-shot evaluation at 128/512/1024 shots for top VQCs
+Bridges ideal simulation and hardware realism
+Optional
+ResNet18 reference runs
+Useful upper-bound classical reference, but not core to edge story
+Optional
+DINOv2 feature baseline
+Valuable for journal extension and transfer-learning context
+Optional
+Stronger augmentation or regularization sweeps
+Better reserved for extension paper
+A practical decision rule is:
+after the first grouped-CV pass on MobileNetV3-Small, keep only thetop two classicalandtop two hybridheads for deeper evaluation
+if 8-qubit models are unstable or uncompetitive, report them honestly and narrow the later expensive experiments to q = 4 and q = 6
+Inputs:all run summaries.Outputs:ablation summary table and pruning decisions.Acceptance criteria:the shortlist rule is documented before looking at the test set; optional extensions do not delay the conference-core experiments. îˆ€fileciteîˆ‚turn1file0îˆ
+Deployment, noise, robustness, and reproducibility
+Noise-aware simulation and small real-device plan
+The revised document recommends a simple progression: ideal simulation first, then finite-shot evaluation, then backend-derived noise simulation, and finally asmall real-device subset experimentonly for the best low-qubit head. It also points out that backend calibration properties can be used to build noise models, and that the main bottleneck in real-device work is not the size of a 4â€“8 qubit statevector but noise, transpilation, and queueing. îˆ€fileciteîˆ‚turn1file0îˆ
+A disciplined plan is:
+train all VQCs in analytic expectation mode
+re-evaluate the top two VQCs with finite shots at128,512, and1024
+build a noise model from a current public backend with at least 8 usable qubits
+run one small real-device study for thebest 4-qubit modelonly, on a modest subset of the held-out test examples or bottleneck vectors
+Capture the following artifact bundle:
+backend name
+calibration timestamp
+coupling map
+transpilation seed
+optimization level
+shot count
+mitigation setting, if any
+Suggested command patterns:
+python eval_quantum.py \  --config configs/mnv3_reupload_q4.yaml \  --mode shots \  --shots 512
+python eval_quantum.py \  --config configs/mnv3_reupload_q4.yaml \  --mode noisy_backend \  --backend <public_backend_name>
+Inputs:trained VQC checkpoints, held-out features or images, backend calibration info.Outputs:ideal vs finite-shot vs noisy vs real-device comparison tables.Practical runtime:noisy and device-backed runs are far slower than analytic simulation, so restrict them to the final shortlist.Acceptance criteria:at least one low-qubit hybrid head completes the full idealâ†’finite-shotâ†’noisy progression; the real-device result is reported as a degradation study, not as a quantum-advantage claim. îˆ€fileciteîˆ‚turn1file0îˆ
+Edge and Green-AI evaluation
+The revised project makes an important distinction: your paper can support anedge-assistedclaim, but not a strong â€œfully on-device quantum inferenceâ€ claim. The practical deployment framing should therefore besplit inference, in which the device runs the lightweight backbone and bottleneck, and only the tiny bottleneck vector is sent onward to a remote classical or quantum head. The same document recommends usingONNX Runtime Mobileand mobile benchmarking tools for the classical portion, andCodeCarbonplus a transparent Green-AI reporting section for energy. îˆ€fileciteîˆ‚turn1file0îˆ
+A strong measurement plan is:
+export the classical on-device segment to ONNX
+benchmark CPU inference for batch size 1 and warm vs steady-state latency
+measure model file size and memory footprint
+record bottleneck transmission size for q = 4/6/8
+instrument training with CodeCarbon
+report energy in relative terms and include caveats about estimation error
+Suggested artifacts:
+model_device.onnx
+latency report for desktop CPU as proxy
+optional Android or iOS benchmark log if available
+codecarbon.csv
+communication-cost table comparing image upload versus bottleneck upload
+Recommended metrics:
+initialization latency
+steady-state batch-1 latency
+peak memory
+Joules per image or energy proxy
+kWh per training campaign
+energy-normalized macro-F1
+Inputs:final classical-path model, measured hardware description, energy tracker logs.Outputs:device-benchmark report and Green-AI appendix.Acceptance criteria:the paper never implies mobile devices execute the quantum circuit natively; every deployment claim is scoped to the classical front-end or split-inference system. îˆ€fileciteîˆ‚turn1file0îˆ
+Robustness and explainability experiments
+The revised project recommends bothadversarial robustnessanddual explainability. For robustness, the minimum useful package isFGSMandPGDon the top classical and hybrid finalists. For explainability, combineGrad-CAMandIntegrated Gradientson the CNN portion withquantum-side saliency or Fourier-spectrum analysison the VQC portion. The revised document explicitly connects the Fourier-style interpretation to the quantum-model literature and recommends these analyses as novelty-boosting extensions. îˆ€fileciteîˆ‚turn1file0îˆ
+A good practical robustness schedule is:
+FGSM with
+PGD with 10 steps at, step size
+PGD with 20 steps at, step size
+For explainability:
+generate Grad-CAM for correctly classified and misclassified test examples from every major class
+generate Integrated Gradients using the padded-black or blurred-image baseline
+for VQCs, inspect sensitivity of outputs to each bottleneck component and plot learned spectral tendencies for the re-uploading head
+Inputs:final shortlisted models and held-out test samples.Outputs:robustness curves, attribution panels, qualitative case studies.Acceptance criteria:at least one figure panel clearly shows whether the model attends to lesion/morphology regions rather than padding artifacts or leaf edges alone; robustness results are interpreted cautiously and comparatively, not as absolute security claims. îˆ€fileciteîˆ‚turn1file0îˆ
+Reproducibility, release, and publication gates
+The revised projectâ€™s reproducibility checklist is already strong and should be adopted almost verbatim. At minimum, release:
+split manifests
+manifest-building scripts
+preprocessing and augmentation configs
+training configs for every model
+all seeds
+environment lockfiles
+calibration scripts
+latency and energy scripts
+evaluation notebook that regenerates tables and figures
+concise model cards for the final released checkpoints. îˆ€fileciteîˆ‚turn1file0îˆ
+A practical repository structure is:
+project/  configs/  manifests/  src/  tools/  reports/  checkpoints/  notebooks/  release/
+And a strong artifact checklist is:
+Artifact
+Required for workshop
+Required for conference
+Required for journal
+Frozen grouped split manifests
+Yes
+Yes
+Yes
+Classical + hybrid configs
+Yes
+Yes
+Yes
+Environment lockfile
+Yes
+Yes
+Yes
+Calibration and stats scripts
+Optional
+Yes
+Yes
+Latency and energy scripts
+Optional
+Yes
+Yes
+Noisy simulation scripts
+Optional
+Yes
+Yes
+Real-device subset notebook
+No
+Optional
+Yes
+Robustness and explainability assets
+No
+Optional
+Yes
+Model cards and release package
+Optional
+Yes
+Yes
+For milestone gating:
+Workshop gate:MobileNetV3-Small, grouped splits, Dense/LR/SVM and 4/6-qubit hybrids, calibration, one fair main table
+Conference gate:all must-run ablations, parameter-matched controls, held-out statistical tests, energy and latency section, noisy-simulation appendix
+Journal gate:robustness, explainability, real-device or stronger noisy evaluation, and ideally one external-stress or field-style extension. îˆ€fileciteîˆ‚turn1file0îˆ
+The final decision rule for publication readiness should be simple. Move to writing when:
+the final test set is untouched until the shortlist is frozen
+the strongest classical baseline is known
+the best hybrid head either clearly improves macro-F1, calibration, or minority recall,orthe negative result is itself rigorous and informative
+all claims are backed by fair controls, not single-run anecdotes. That framing is exactly what makes this project publishable even if the hybrid gains are small or selective rather than dramatic. îˆ€fileciteîˆ‚turn1file0îˆ
+Final milestone acceptance checklist
+Major milestone
+Acceptance criteria
+Dataset ready
+manifest complete, license recorded, label ontology verified, zero unresolved parent collisions
+Preprocessing ready
+deterministic eval pipeline and train-only augmentation pipeline both visually validated
+Baseline ready
+MobileNetV3-Small sanity model stable, strongest classical control identified
+Hybrid ready
+all three VQC families implemented at q = 4, at least two stable at q = 6
+Main benchmark ready
+grouped 5-fold CV finished, held-out test evaluated once, calibration and paired tests complete
+Extension ready
+noisy simulation completed for shortlisted heads; deployment, robustness, and explainability sections reproducible
+Submission ready
+figures regenerate from scripts, artifacts packaged, claims aligned with evidence and caveats
+The most important strategic rule is totreat leakage-safe data handling and classical fairness as the foundation of the projectâ€™s novelty. If those two pieces are correct, the project can still make a strong contribution even if the final result is â€œhybrid helps mostly in calibration or minority-class behavior, not in raw accuracy.â€ If those two pieces are weak, even a flashy hybrid result will be hard to defend. îˆ€fileciteîˆ‚turn1file0îˆ
+

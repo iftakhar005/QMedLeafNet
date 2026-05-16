@@ -1,0 +1,2 @@
+Checksums created by audit_dataset.py.
+To verify on Windows PowerShell, rerun a SHA256 comparison if needed.

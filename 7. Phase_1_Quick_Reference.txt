@@ -1,0 +1,448 @@
+================================================================================
+PHASE 1 QUICK REFERENCE - COPY & PASTE COMMAND SEQUENCES
+================================================================================
+
+PROJECT: Hybrid Quantum-Classical Medicinal Plant Health Detection
+PHASE: Data Foundation & Leakage-Safe Preprocessing
+DURATION: ~17 days (May 4-27, 2026)
+
+================================================================================
+WEEK 1: DATASET DOWNLOAD & AUDIT
+================================================================================
+
+STEP 1: Create directory structure
+-------
+mkdir -p data/raw data/interim data/processed
+mkdir -p manifests reports notebooks configs
+mkdir -p src/tools src/utils src/models
+mkdir -p checkpoints logs
+tree -L 2
+
+STEP 2: Download dataset
+-------
+# Go to: https://data.mendeley.com/datasets/23tnz64w5m/1
+# Download and extract all files to: data/raw/
+# Then verify:
+ls -lh data/raw/
+find data/raw -type f | wc -l
+
+STEP 3: Install packages
+-------
+cat > requirements_phase1.txt << 'EOF'
+pandas==2.0.3
+numpy==1.24.3
+pillow==10.0.0
+opencv-python==4.8.0.74
+scikit-learn==1.3.0
+matplotlib==3.7.2
+seaborn==0.12.2
+tqdm==4.65.0
+python-dotenv==1.0.0
+EOF
+
+pip install -r requirements_phase1.txt
+
+STEP 4: Create audit script
+-------
+# Copy the audit_dataset.py script from Phase 1 Complete Guide
+# Save to: src/tools/audit_dataset.py
+python src/tools/audit_dataset.py
+
+Expected output:
+  - reports/data_audit.json
+  - Corruption rate should be < 1%
+
+STEP 5: Create checksums
+-------
+find data/raw -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) \
+  | sort | xargs sha256sum > reports/raw_checksums.txt
+
+sha256sum -c reports/raw_checksums.txt > reports/checksum_verification.txt 2>&1
+grep "OK" reports/checksum_verification.txt | wc -l
+
+STEP 6: Create license documentation
+-------
+cat > reports/license_note.md << 'EOF'
+# Dataset License
+
+Source: https://data.mendeley.com/datasets/23tnz64w5m/1
+License: CC BY 4.0
+Downloaded: [DATE]
+Total files: 22,000+ (1,981 original + 20,019 augmented)
+Species: 7
+EOF
+
+STEP 7: Create metadata JSON
+-------
+cat > reports/dataset_metadata.json << 'EOF'
+{
+  "dataset_name": "Bangladeshi Medicinal Plant Health Detection",
+  "download_date": "2026-05-04",
+  "license": "CC BY 4.0",
+  "source_url": "https://data.mendeley.com/datasets/23tnz64w5m/1",
+  "expected_statistics": {
+    "total_original_images": 1981,
+    "total_augmented_images": 20019,
+    "total_all_images": 22000,
+    "number_of_species": 7
+  }
+}
+EOF
+
+GATE CHECK (Days 1-5):
+✓ reports/data_audit.json exists
+✓ reports/raw_checksums.txt exists
+✓ Corruption rate < 1%
+✓ All image files readable
+
+================================================================================
+WEEK 2: METADATA EXTRACTION & LABEL ONTOLOGY
+================================================================================
+
+STEP 8: Extract metadata from filenames
+-------
+# Copy extract_metadata.py from Phase 1 Complete Guide
+# Save to: src/tools/extract_metadata.py
+python src/tools/extract_metadata.py
+
+Expected output:
+  - reports/raw_metadata_extracted.csv
+  - reports/label_ontology.json
+
+STEP 9: Verify label ontology
+-------
+python3 << 'EOF'
+import json
+import pandas as pd
+
+with open('reports/label_ontology.json') as f:
+    ontology = json.load(f)
+
+print("LABEL ONTOLOGY VERIFICATION")
+print("="*80)
+print(f"Species: {len(ontology['species'])} unique")
+for s in ontology['species']:
+    print(f"  - {s}")
+
+print(f"\nConditions: {len(ontology['conditions'])} unique")
+for c in ontology['conditions']:
+    print(f"  - {c}")
+
+print(f"\nTotal classes: {len(ontology['species']) * len(ontology['conditions'])}")
+EOF
+
+STEP 10: Build master manifest
+-------
+# Copy build_manifest.py from Phase 1 Complete Guide
+# Save to: src/tools/build_manifest.py
+python src/tools/build_manifest.py
+
+Expected output:
+  - manifests/master_manifest.parquet
+  - manifests/master_manifest.csv
+
+STEP 11: Verify manifest
+-------
+python3 << 'EOF'
+import pandas as pd
+
+df = pd.read_parquet('manifests/master_manifest.parquet')
+
+print("="*80)
+print("MASTER MANIFEST VERIFICATION")
+print("="*80)
+print(f"Total files: {len(df)}")
+print(f"Original images: {df['is_original'].sum()}")
+print(f"Augmented images: {(~df['is_original']).sum()}")
+print(f"Parent image IDs: {df['parent_leaf_id'].nunique()}")
+print(f"Parent mapping errors: {(~df['parent_found']).sum()}")
+print(f"\nSpecies: {df['species'].nunique()}")
+print(f"Conditions: {df['condition'].nunique()}")
+print(f"\nMissing species labels: {df['species'].isna().sum()}")
+print(f"Missing condition labels: {df['condition'].isna().sum()}")
+
+print("\nSample:")
+print(df[['filename', 'parent_leaf_id', 'species', 'condition', 'is_original']].head(10))
+EOF
+
+GATE CHECK (Days 6-8):
+✓ reports/label_ontology.json exists
+✓ All 7 species identified
+✓ All condition labels identified
+✓ manifests/master_manifest.parquet exists
+✓ Parent mapping errors = 0
+
+================================================================================
+WEEK 3: MANIFEST INTEGRITY & LEAKAGE-SAFE SPLITS
+================================================================================
+
+STEP 12: Run manifest integrity check
+-------
+# Copy check_manifest.py from Phase 1 Complete Guide
+# Save to: src/tools/check_manifest.py
+python src/tools/check_manifest.py
+
+Expected output:
+  ✓ All parents mapped correctly
+  ✓ All augmented images inherit correct labels
+  ✓ 100% label coverage (or very close)
+  ✓ No critical errors
+
+STEP 13: Create grouped splits
+-------
+# Copy make_grouped_splits.py from Phase 1 Complete Guide
+# Save to: src/tools/make_grouped_splits.py
+python src/tools/make_grouped_splits.py
+
+Expected output:
+  - manifests/splits_v1/test_groups.csv
+  - manifests/splits_v1/dev_fold_0_train.csv
+  - manifests/splits_v1/dev_fold_0_val.csv
+  - ... (all 5 folds)
+  - manifests/splits_v1/split_report.json
+
+STEP 14: Verify splits for zero leakage
+-------
+python3 << 'EOF'
+import pandas as pd
+import os
+
+splits_dir = 'manifests/splits_v1'
+
+# Load test set
+test = pd.read_csv(os.path.join(splits_dir, 'test_groups.csv'))
+test_parents = set(test['parent_leaf_id'])
+
+print("="*80)
+print("SPLIT VERIFICATION - ZERO LEAKAGE CHECK")
+print("="*80)
+print(f"\nTest set: {len(test)} files, {len(test_parents)} parent groups")
+
+all_good = True
+for fold in range(5):
+    train_file = os.path.join(splits_dir, f'dev_fold_{fold}_train.csv')
+    val_file = os.path.join(splits_dir, f'dev_fold_{fold}_val.csv')
+    
+    train = pd.read_csv(train_file)
+    val = pd.read_csv(val_file)
+    
+    train_parents = set(train['parent_leaf_id'])
+    val_parents = set(val['parent_leaf_id'])
+    
+    # Check for leakage
+    leak_train = test_parents & train_parents
+    leak_val = test_parents & val_parents
+    leak_cv = train_parents & val_parents
+    
+    if leak_train or leak_val or leak_cv:
+        print(f"❌ Fold {fold}: LEAKAGE DETECTED!")
+        all_good = False
+    else:
+        print(f"✓ Fold {fold}: Train={len(train)}, Val={len(val)} - NO LEAKAGE")
+
+print("\n" + "="*80)
+if all_good:
+    print("✓✓✓ ALL SPLITS VERIFIED - ZERO PARENT LEAKAGE ✓✓✓")
+else:
+    print("❌ LEAKAGE DETECTED - DO NOT PROCEED")
+print("="*80)
+EOF
+
+STEP 15: Create split documentation
+-------
+cat > reports/split_report.md << 'EOF'
+# Grouped Split Report
+
+## Summary
+- Total parent images: 1,981
+- Test set: 15% of parents (~297 originals)
+- Development pool: 85% of parents (~1,684 originals)
+- Cross-validation: 5-fold stratified
+
+## File Locations
+- Test manifest: `manifests/splits_v1/test_groups.csv`
+- Train folds: `manifests/splits_v1/dev_fold_{0-4}_train.csv`
+- Val folds: `manifests/splits_v1/dev_fold_{0-4}_val.csv`
+
+## Verification
+- ✓ Zero parent-image leakage
+- ✓ Augmented images never cross boundaries
+- ✓ Stratification maintained across folds
+
+## Important
+- Test set is immutable until final evaluation
+- Augmentations generated AFTER splitting
+- Use only dev_fold_{0-4} for model selection
+EOF
+
+GATE CHECK (Days 9-10):
+✓ All split files created
+✓ Zero parent leakage verified (run script above)
+✓ All 5 folds present
+✓ Split report created
+✓ Test set is immutable
+
+================================================================================
+FINAL PHASE 1 ACCEPTANCE
+================================================================================
+
+STEP 16: Create completion checklist
+-------
+cat > reports/PHASE1_COMPLETE.txt << 'EOF'
+PHASE 1 COMPLETION CHECKLIST
+
+DATASET AUDIT
+✓ Dataset downloaded from Mendeley
+✓ License verified: CC BY 4.0
+✓ Directory structure validated
+✓ Dataset audit created: reports/data_audit.json
+✓ Corruption rate < 1%
+
+METADATA
+✓ Label ontology frozen: reports/label_ontology.json
+✓ All 7 species identified
+✓ All condition labels identified
+✓ Master manifest created: manifests/master_manifest.parquet
+✓ Manifest integrity verified
+
+SPLITS
+✓ Grouped test set created (15% = ~297 parents)
+✓ Grouped 5-fold CV created (85% = ~1,684 parents)
+✓ Zero parent-image leakage verified
+✓ All split files created and verified
+
+READY FOR PHASE 2: BASELINES
+EOF
+
+STEP 17: Generate summary
+-------
+python3 << 'EOF'
+import pandas as pd
+import json
+
+manifest = pd.read_parquet('manifests/master_manifest.parquet')
+
+with open('reports/label_ontology.json') as f:
+    ontology = json.load(f)
+
+with open('manifests/splits_v1/split_report.json') as f:
+    split_report = json.load(f)
+
+print("\n" + "="*80)
+print("PHASE 1 SUMMARY")
+print("="*80 + "\n")
+
+print("DATASET STATISTICS")
+print(f"Total files: {len(manifest):,}")
+print(f"  Original images: {manifest['is_original'].sum():,}")
+print(f"  Augmented images: {(~manifest['is_original']).sum():,}")
+print(f"Unique parents: {manifest['parent_leaf_id'].nunique():,}")
+
+print(f"\nLABEL ONTOLOGY")
+print(f"Species: {len(ontology['species'])} - {', '.join(ontology['species'][:3])}...")
+print(f"Conditions: {len(ontology['conditions'])} - {', '.join(ontology['conditions'][:3])}...")
+
+print(f"\nSPLIT CONFIGURATION")
+print(f"Test: {split_report['test_ratio']:.1%} = {split_report['test_parent_groups']} parent groups")
+print(f"Dev: {1-split_report['test_ratio']:.1%} = 5-fold CV")
+print(f"Leakage: {split_report['verification']}")
+
+print("\nKEY ARTIFACTS")
+artifacts = [
+    ('manifests/master_manifest.parquet', '✓'),
+    ('reports/label_ontology.json', '✓'),
+    ('reports/data_audit.json', '✓'),
+    ('manifests/splits_v1/test_groups.csv', '✓'),
+    ('manifests/splits_v1/dev_fold_0_train.csv', '✓'),
+    ('manifests/splits_v1/split_report.json', '✓'),
+]
+for path, status in artifacts:
+    print(f"{status} {path}")
+
+print("\n" + "="*80)
+print("✓✓✓ PHASE 1 COMPLETE ✓✓✓")
+print("Ready for Phase 2: Baselines (May 18-30)")
+print("="*80 + "\n")
+EOF
+
+================================================================================
+COMMON TROUBLESHOOTING
+================================================================================
+
+PROBLEM: Metadata extraction fails
+SOLUTION:
+  - Check filename patterns in extract_metadata.py
+  - Print first 10 filenames: find data/raw -type f -name "*.jpg" | head -10
+  - Adjust regex patterns in _build_patterns() method
+  - Look for consistent naming convention
+
+PROBLEM: Parent mapping errors
+SOLUTION:
+  - Verify filename format is consistent
+  - Check for special characters or encoding issues
+  - Print sample mappings: python3 << 'EOF'
+    import pandas as pd
+    df = pd.read_parquet('manifests/master_manifest.parquet')
+    print(df[~df['parent_found']][['filename', 'parent_leaf_id']].head(20))
+  EOF
+
+PROBLEM: Labels not extracted
+SOLUTION:
+  - Manually examine files: ls data/raw/Original_Images/ | head -20
+  - Check if species/condition names are in filenames
+  - May need to load metadata CSV if provided separately
+  - Update the filename parsing logic in build_manifest.py
+
+PROBLEM: Leakage detected in splits
+SOLUTION:
+  - STOP - this is critical
+  - Verify parent_leaf_id extraction is correct
+  - Check that parent_id uniquely identifies original images
+  - Re-examine filename parsing logic
+  - May need to manually map files to parents if naming is inconsistent
+
+================================================================================
+TIME ESTIMATE BREAKDOWN
+================================================================================
+
+Dataset Download & Audit:        3-4 days
+  ├─ Download:                   1 day
+  ├─ Run audit script:           1 day
+  └─ Create checksums:           1 day
+
+Metadata Extraction:             2-3 days
+  ├─ Extract from filenames:     1 day
+  ├─ Build label ontology:       1 day
+  └─ Manual verification:        0.5 days
+
+Manifest Building:               2 days
+  ├─ Build manifest:             1 day
+  └─ Integrity checks:           1 day
+
+Split Creation:                  2-3 days
+  ├─ Generate splits:            1 day
+  ├─ Verify zero leakage:        1 day
+  └─ Documentation:              0.5 days
+
+Buffer & Troubleshooting:        2 days
+
+TOTAL: 17 days (May 4 - May 27, 2026)
+
+================================================================================
+NEXT PHASE: BASELINES (May 18-30)
+================================================================================
+
+Phase 2 will cover:
+1. Preprocessing pipeline and backbone sanity checks
+2. Classical baseline implementation
+3. Parameter matching for fair comparison
+
+Inputs for Phase 2:
+  - manifests/master_manifest.parquet
+  - manifests/splits_v1/dev_fold_{0-4}_{train,val}.csv
+  - manifests/splits_v1/test_groups.csv
+  - reports/label_ontology.json
+
+Do NOT modify these files after Phase 1 completes.
+
+================================================================================

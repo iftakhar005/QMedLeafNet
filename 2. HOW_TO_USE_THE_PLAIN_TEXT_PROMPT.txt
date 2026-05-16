@@ -1,0 +1,277 @@
+================================================================================
+HOW TO USE THE PLAIN TEXT PROMPT WITH YOUR CODE EDITOR
+================================================================================
+
+This file explains exactly how to use PLAIN_TEXT_PROMPT_FOR_CLAUDE.txt with your code editor (Claude Code, Claude Desktop, or claude.ai).
+
+================================================================================
+WHAT YOU NEED (Before you start):
+================================================================================
+
+Files to Download from /mnt/user-data/outputs/:
+1. PLAIN_TEXT_PROMPT_FOR_CLAUDE.txt (This is the system prompt)
+
+Plus all 10 guide documents:
+2. 00_INDEX_START_HERE.txt
+3. README_START_HERE.md
+4. PHASE_1_EXECUTIVE_SUMMARY.md
+5. Phase_1_Complete_Guide.md
+6. Phase_1_Quick_Reference.txt
+7. PHASE_1_ROADMAP.txt
+8. SYSTEM_PROMPT_FOR_IMPLEMENTATION.md
+9. QUICK_START_GUIDE.md
+10. IMPLEMENTATION_CHECKLIST.md
+11. COMPLETE_DELIVERY_SUMMARY.txt
+
+Plus your original project files:
+12. Step-by-Step_Execution_Plan_for_the_Revised_Hybrid_Quantum-Classical_Medicinal_Plant_Health_Project.docx
+13. A_More_Novel_Hybrid_Quantum-Classical_Project_for_Bangladeshi_Medicinal_Plant_Health_Detection.docx
+
+================================================================================
+STEP-BY-STEP INSTRUCTIONS:
+================================================================================
+
+STEP 1: Copy the Plain Text Prompt
+- Open: PLAIN_TEXT_PROMPT_FOR_CLAUDE.txt
+- Select ALL text (Ctrl+A on Windows, Cmd+A on Mac)
+- Copy entire contents (Ctrl+C or Cmd+C)
+
+STEP 2: Open Your Code Editor
+- Use: Claude Code (recommended), Claude Desktop, or claude.ai
+- Create a new conversation/chat
+
+STEP 3: Paste the Prompt
+- Paste the entire prompt into your code editor (Ctrl+V or Cmd+V)
+- This is your FIRST message to Claude
+
+STEP 4: Send the Prompt
+- Click "Send" or press Enter
+- Claude will read the prompt and understand its role
+
+STEP 5: Claude Responds
+- Claude will ask: "Do you understand?" or similar
+- This means Claude has read and understood the prompt
+- You can now proceed
+
+STEP 6: Send the Guide Documents
+- Open each of these files and copy their entire contents:
+  * Phase_1_Complete_Guide.md
+  * PHASE_1_EXECUTIVE_SUMMARY.md
+  * PHASE_1_ROADMAP.txt
+  * Phase_1_Quick_Reference.txt
+  * README_START_HERE.md
+  
+- In a NEW message to Claude, paste all of these
+- Include this message: "Here are my project guide documents"
+- Send
+
+STEP 7: Claude Acknowledges
+- Claude will confirm it has all documents
+- Claude will ask about your system (Python version, disk space, etc.)
+
+STEP 8: Provide Your System Information
+- Answer Claude's questions:
+  * What is your OS? (Windows, Mac, Linux)
+  * Python version: (run: python3 --version, then paste result)
+  * Disk space: (run: df -h on Mac/Linux, or dir /w on Windows, then paste result)
+  * Available RAM: (approximately)
+
+STEP 9: Claude Begins Phase 1
+- Claude will guide you through Step 1: Environment Setup
+- Follow Claude's instructions exactly
+- Report back when each step is complete
+
+STEP 10: Continue Through All 9 Steps
+- Work with Claude iteratively
+- Claude provides instructions
+- You execute and report results
+- Claude verifies before moving forward
+
+================================================================================
+DETAILED WORKFLOW:
+================================================================================
+
+MESSAGE 1 TO CLAUDE: Paste the entire PLAIN_TEXT_PROMPT_FOR_CLAUDE.txt
+
+CLAUDE'S RESPONSE: Should acknowledge the prompt and its role
+
+MESSAGE 2 TO CLAUDE: Send all guide documents (10 files worth of text)
+
+CLAUDE'S RESPONSE: Should confirm receipt and ask system questions
+
+MESSAGE 3 TO CLAUDE: Answer system questions
+- My OS is: [Windows/Mac/Linux]
+- Python version: [output from: python3 --version]
+- Disk space: [output from: df -h or dir /w]
+- Available RAM: [approximately in GB]
+- I understand zero parent-image leakage is critical: Yes
+- I'm ready to dedicate 1-2 hours/day for 17 days: Yes
+
+CLAUDE'S RESPONSE: Should begin Step 1 guidance
+
+MESSAGES 4+: Iterative work
+- Claude guides each step
+- You execute and report
+- Claude verifies and moves forward
+- This continues for 17 days
+
+================================================================================
+WHAT CLAUDE WILL DO:
+================================================================================
+
+With the plain text prompt, Claude will:
+✓ Understand it's implementing Phase 1 of the project
+✓ Know the critical principle (zero parent-image leakage)
+✓ Follow the 9-step implementation plan
+✓ Create Python scripts from the guide documents
+✓ Verify outputs before proceeding
+✓ Help debug issues
+✓ Manage gate approvals (Days 7, 9, 12, 15)
+✓ Track progress through Phase 1
+✓ Guide to Phase 2 at the end
+
+================================================================================
+IMPORTANT NOTES:
+================================================================================
+
+1. THE PLAIN TEXT PROMPT IS COMPLETE AND STANDALONE
+   - You do NOT need to send any other prompts
+   - It contains all instructions Claude needs
+   - 369 lines of pure guidance
+
+2. THE PROMPT COVERS EVERYTHING
+   - Critical principles
+   - 9-step implementation
+   - Gate approvals
+   - Manual steps user must do
+   - Troubleshooting
+   - Workflow
+
+3. CLAUDE CODE IS RECOMMENDED
+   - Has direct file access
+   - Can create files in your project
+   - Fastest workflow
+   - But claude.ai also works fine
+
+4. THE PROMPT WILL NOT CHANGE
+   - Use the exact same prompt
+   - Do NOT modify it
+   - If Claude doesn't understand, paste again
+
+5. YOUR ORIGINAL PROJECT FILES
+   - Mentioned in the prompt
+   - Claude will reference them for context
+   - Good to have but prompt explains what they're for
+
+================================================================================
+EXAMPLE FIRST THREE MESSAGES:
+================================================================================
+
+MESSAGE 1:
+[Paste entire contents of PLAIN_TEXT_PROMPT_FOR_CLAUDE.txt]
+
+CLAUDE RESPONDS:
+"Thank you for providing the system prompt. I understand my role in helping 
+you implement Phase 1 of the Hybrid Quantum-Classical Medicinal Plant Health 
+Detection project. I will guide you through all 9 steps with focus on zero 
+parent-image leakage prevention. Before we begin, please provide the guide 
+documents you mentioned."
+
+MESSAGE 2:
+Here are my 10 guide documents:
+
+[Paste Phase_1_Complete_Guide.md]
+[Paste PHASE_1_EXECUTIVE_SUMMARY.md]
+[Paste PHASE_1_ROADMAP.txt]
+[Paste Phase_1_Quick_Reference.txt]
+[Paste README_START_HERE.md]
+
+CLAUDE RESPONDS:
+"Excellent, I have received all 5 main documents. I also see from the prompt 
+that there are 5 additional documents. Before we start Step 1, I need to know 
+about your system. Please provide:
+
+1. Your operating system (Windows, Mac, or Linux)?
+2. Your Python version (run: python3 --version and paste the output)?
+3. Available disk space (run: df -h on Mac/Linux, or dir /w on Windows)?
+4. Approximately how much RAM is available?
+
+Once I have this info, we'll begin Step 1: Environment Setup."
+
+MESSAGE 3:
+My system information:
+- OS: macOS
+- Python version: Python 3.9.0
+- Available disk space: 500 GB
+- Available RAM: 16 GB
+- I understand zero parent-image leakage is the critical principle: Yes
+- I'm ready to dedicate time to Phase 1: Yes
+
+CLAUDE RESPONDS:
+"Perfect! Your system meets all requirements. Let's begin Phase 1: Step 1 - 
+Environment Setup. 
+
+First, we need to create the directory structure. Here are the commands to run..."
+
+[And so on for all 9 steps]
+
+================================================================================
+KEY POINTS:
+================================================================================
+
+1. ONE PROMPT, EVERYTHING INCLUDED
+   The plain text prompt is complete - you don't need other prompts
+
+2. SIMPLE WORKFLOW
+   Prompt → Documents → System Info → Step 1 → Continue → Done
+
+3. 369 LINES OF PURE GUIDANCE
+   This is a long prompt, but it covers everything Claude needs
+
+4. NO FILES NEEDED FROM CLAUDE.AI
+   You provide the prompt and documents
+   Claude guides the implementation
+
+5. WORKS WITH ANY CLAUDE INTERFACE
+   Claude Code (best)
+   Claude Desktop (good)
+   Claude.ai (works fine)
+
+================================================================================
+TROUBLESHOOTING:
+================================================================================
+
+If Claude doesn't respond correctly:
+1. Make sure you pasted the ENTIRE prompt (all 369 lines)
+2. Make sure the prompt is the FIRST message
+3. Make sure you provided all 10 guide documents in a second message
+4. Make sure you answered all system questions
+
+If Claude asks for documents again:
+1. Copy the documents that are missing
+2. Send them in a new message
+3. Claude will confirm receipt
+
+If Claude skips steps:
+1. Tell Claude: "Please follow Step X from the guide"
+2. Claude will reference the documents
+3. Continue from correct step
+
+================================================================================
+READY TO START?
+================================================================================
+
+1. Download all files from /mnt/user-data/outputs/
+2. Open PLAIN_TEXT_PROMPT_FOR_CLAUDE.txt
+3. Copy all 369 lines
+4. Open your code editor (Claude Code, Desktop, or Web)
+5. Create new conversation
+6. Paste the prompt
+7. Send
+8. Follow Claude's guidance
+
+That's it! Claude will take it from there.
+
+Good luck with Phase 1! 🚀
+
+================================================================================

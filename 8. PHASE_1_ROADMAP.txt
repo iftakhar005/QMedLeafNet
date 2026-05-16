@@ -1,0 +1,456 @@
+================================================================================
+PHASE 1 ROADMAP: DATA FOUNDATION & LEAKAGE-SAFE PREPROCESSING
+================================================================================
+
+PROJECT: Hybrid Quantum-Classical Medicinal Plant Health Detection
+TIMELINE: May 4 - May 27, 2026 (17 days)
+DATASET: Bangladeshi Medicinal Plant Health - Mendeley Data
+
+================================================================================
+WEEK 1: DATASET ACQUISITION & AUDIT (May 4-10)
+================================================================================
+
+DAY 1 (May 4)
+  └─ Download dataset from: https://data.mendeley.com/datasets/23tnz64w5m/1
+     Expected: All files, all folders, complete archive
+     Extract to: data/raw/
+     Verify: ~22,000 files present
+
+DAY 2 (May 5)
+  └─ Create project directory structure
+  └─ Install Python packages
+  └─ Create audit script: src/tools/audit_dataset.py
+  └─ Run full dataset audit
+     Output: reports/data_audit.json
+
+DAY 3 (May 6)
+  └─ Create SHA256 checksums for all files
+  └─ Verify checksums
+  └─ Create license documentation: reports/license_note.md
+     Output: reports/raw_checksums.txt
+             reports/license_note.md
+             reports/dataset_metadata.json
+
+GATE CHECK (Days 1-3)
+  ✓ Dataset fully downloaded
+  ✓ Corruption rate < 1%
+  ✓ License documented
+  ✓ Ready for metadata extraction
+
+DAY 4 (May 7)
+  └─ BUFFER/CONTINGENCY DAY
+     (Handle any download/verification issues)
+
+DAY 5 (May 8)
+  └─ BUFFER/CONTINGENCY DAY
+     (Handle any audit issues)
+
+================================================================================
+WEEK 2: METADATA EXTRACTION & LABEL ONTOLOGY (May 11-17)
+================================================================================
+
+DAY 6 (May 11)
+  └─ Examine filename patterns
+  └─ Create extract_metadata.py: src/tools/extract_metadata.py
+  └─ Extract metadata from filenames
+  └─ Create initial label ontology
+     Output: reports/raw_metadata_extracted.csv
+             reports/label_ontology.json
+
+DAY 7 (May 12)
+  └─ CRITICAL: Freeze label ontology
+  └─ Verify exactly 7 species
+  └─ Verify all condition labels identified
+  └─ Document species and condition counts
+  └─ If ontology changes → update everywhere
+     Output: Frozen reports/label_ontology.json
+             (DO NOT MODIFY AFTER THIS DAY)
+
+GATE CHECK (Days 6-7)
+  ✓ All 7 species identified
+  ✓ All conditions identified
+  ✓ Label ontology frozen
+  ✓ Label coverage > 95%
+  ✓ Ready for manifest building
+
+DAY 8 (May 13)
+  └─ Create manifest builder: src/tools/build_manifest.py
+  └─ Build master manifest with parent-image grouping
+  └─ CRITICAL: Establish parent_leaf_id mapping
+     Output: manifests/master_manifest.parquet
+             manifests/master_manifest.csv
+
+DAY 9 (May 14)
+  └─ Run integrity checks: src/tools/check_manifest.py
+  └─ Verify all parent mappings valid
+  └─ Verify label consistency
+  └─ Verify file existence
+  └─ Document class distribution
+     Output: Integrity check report
+
+GATE CHECK (Days 8-9)
+  ✓ Master manifest built
+  ✓ Parent mapping errors = 0
+  ✓ Label coverage > 98%
+  ✓ All files exist on disk
+  ✓ Class distribution documented
+  ✓ Ready for split creation
+
+DAY 10 (May 15)
+  └─ BUFFER/CONTINGENCY DAY
+     (Handle any metadata extraction issues)
+
+================================================================================
+WEEK 3: LEAKAGE-SAFE SPLITS & FINALIZATION (May 18-24)
+================================================================================
+
+DAY 11 (May 18)
+  └─ Create split generator: src/tools/make_grouped_splits.py
+  └─ CRITICAL: Create grouped test set (15% of parents)
+  └─ Create grouped 5-fold CV (85% of parents)
+     Output: manifests/splits_v1/test_groups.csv
+             manifests/splits_v1/dev_fold_*_train.csv
+             manifests/splits_v1/dev_fold_*_val.csv
+
+DAY 12 (May 19)
+  └─ Run zero-leakage verification (3 times to be sure)
+  └─ CRITICAL: Verify NO parent appears in multiple sets
+  └─ Check cross-fold leakage
+  └─ Check test-dev leakage
+  └─ Document verification results
+     Output: Leakage verification report
+
+DAY 13 (May 20)
+  └─ Create split documentation: reports/split_report.md
+  └─ Create split metadata: manifests/splits_v1/split_report.json
+  └─ Finalize Phase 1 documentation
+  └─ Create phase completion checklist
+     Output: Complete Phase 1 documentation
+
+GATE CHECK (Days 11-13)
+  ✓ All splits created
+  ✓ Zero parent-image leakage verified (3x)
+  ✓ Stratification confirmed
+  ✓ All split files saved
+  ✓ Documentation complete
+  ✓ PHASE 1 ACCEPTANCE GATE PASSED
+
+DAY 14 (May 21)
+  └─ BUFFER/CONTINGENCY DAY
+     (Handle any split/leakage issues)
+
+DAY 15 (May 22)
+  └─ Final verification and sign-off
+  └─ Commit all Phase 1 artifacts
+  └─ Create phase summary report
+  └─ Prepare for Phase 2 handoff
+     Output: PHASE_1_COMPLETE.txt
+
+================================================================================
+DAYS 16-17 (May 23-24)
+================================================================================
+
+CONTINGENCY BUFFER
+  └─ Handle any unexpected issues
+  └─ Re-verify critical components
+  └─ Fix any errors discovered during final review
+  └─ Update documentation
+
+================================================================================
+PHASE 1 DELIVERABLES (IMMUTABLE AFTER COMPLETION)
+================================================================================
+
+CRITICAL (Must Have)
+  ✓ manifests/master_manifest.parquet
+  ✓ reports/label_ontology.json
+  ✓ manifests/splits_v1/test_groups.csv
+  ✓ manifests/splits_v1/dev_fold_0_train.csv
+  ✓ manifests/splits_v1/dev_fold_0_val.csv
+  ✓ manifests/splits_v1/dev_fold_1_train.csv
+  ✓ manifests/splits_v1/dev_fold_1_val.csv
+  ✓ manifests/splits_v1/dev_fold_2_train.csv
+  ✓ manifests/splits_v1/dev_fold_2_val.csv
+  ✓ manifests/splits_v1/dev_fold_3_train.csv
+  ✓ manifests/splits_v1/dev_fold_3_val.csv
+  ✓ manifests/splits_v1/dev_fold_4_train.csv
+  ✓ manifests/splits_v1/dev_fold_4_val.csv
+  ✓ manifests/splits_v1/split_report.json
+
+DOCUMENTATION (Highly Recommended)
+  ✓ reports/data_audit.json
+  ✓ reports/raw_checksums.txt
+  ✓ reports/license_note.md
+  ✓ reports/dataset_metadata.json
+  ✓ reports/split_report.md
+  ✓ reports/phase1_checklist.md
+  ✓ reports/PHASE_1_COMPLETE.txt
+
+SOURCE CODE (For Reproducibility)
+  ✓ src/tools/audit_dataset.py
+  ✓ src/tools/extract_metadata.py
+  ✓ src/tools/build_manifest.py
+  ✓ src/tools/check_manifest.py
+  ✓ src/tools/make_grouped_splits.py
+
+================================================================================
+DEPENDENCY GRAPH (Must Complete in Order)
+================================================================================
+
+                      ┌─────────────────────────────┐
+                      │  Raw Dataset from Mendeley  │
+                      └──────────────┬──────────────┘
+                                     │
+                      ┌──────────────▼──────────────┐
+                      │   Audit & Verify Dataset    │ ← Days 1-5
+                      │  (Check integrity, license) │
+                      └──────────────┬──────────────┘
+                                     │
+                      ┌──────────────▼──────────────┐
+                      │  Extract Metadata & Labels  │ ← Days 6-7
+                      │   (Freeze label ontology)   │
+                      └──────────────┬──────────────┘
+                                     │
+                      ┌──────────────▼──────────────┐
+                      │   Build Master Manifest     │ ← Days 8-9
+                      │ (Parent-image grouping)     │
+                      └──────────────┬──────────────┘
+                                     │
+                      ┌──────────────▼──────────────┐
+                      │  Create Leakage-Safe Splits │ ← Days 11-13
+                      │  (Test + 5-fold CV)         │
+                      └──────────────┬──────────────┘
+                                     │
+                      ┌──────────────▼──────────────┐
+                      │  Verify Zero Parent Leakage │
+                      │  (3x verification)          │
+                      └──────────────┬──────────────┘
+                                     │
+                      ┌──────────────▼──────────────┐
+                      │  Phase 1 Complete & Locked  │
+                      │    Ready for Phase 2        │
+                      └─────────────────────────────┘
+
+
+================================================================================
+CRITICAL SUCCESS FACTORS
+================================================================================
+
+☐ LEAKAGE PREVENTION
+  └─ Use parent_leaf_id as grouping unit (NOT filenames)
+  └─ Augmented images ONLY in training set
+  └─ Test set contains ORIGINALS ONLY
+  └─ Verify zero parent leakage 3 times
+
+☐ LABEL ONTOLOGY
+  └─ Freeze before manifest building
+  └─ 7 species identified
+  └─ All conditions identified
+  └─ 100% label coverage
+
+☐ IMMUTABILITY
+  └─ Never regenerate splits after locking
+  └─ Never change label ontology after locking
+  └─ Version control all artifacts
+  └─ Document every change if needed
+
+☐ DOCUMENTATION
+  └─ Record dataset version, DOI, download date
+  └─ Document every decision with rationale
+  └─ Create reproducibility checklist
+  └─ Archive decision log
+
+☐ VERIFICATION
+  └─ Run integrity checks pass
+  └─ Zero parent-mapping errors
+  └─ Zero parent-leakage errors
+  └─ All files accessible and readable
+
+================================================================================
+WHAT NOT TO DO
+================================================================================
+
+❌ Do NOT skip the audit phase
+   → You won't know if dataset is corrupted
+
+❌ Do NOT use file-level splits
+   → Augmented images will leak across boundaries
+
+❌ Do NOT extract label ontology from training data
+   → Must freeze it before manifest building
+
+❌ Do NOT include augmentations in test set
+   → Test set must contain originals only
+
+❌ Do NOT regenerate splits after modeling starts
+   → This invalidates all experiments
+
+❌ Do NOT modify manifests or ontology mid-project
+   → If you must change, document it and bump version
+
+❌ Do NOT skip the zero-leakage verification
+   → Run the script 3 times to be absolutely sure
+
+❌ Do NOT proceed to Phase 2 with unresolved issues
+   → Fix everything in Phase 1 first
+
+================================================================================
+METRICS TO TRACK
+================================================================================
+
+QUANTITATIVE
+  • Total files: ~22,000 (1,981 original + 20,019 augmented)
+  • Parent images: 1,981 unique
+  • Species: 7
+  • Condition labels: ~8-9
+  • Test parent groups: ~297 (15%)
+  • Dev parent groups: ~1,684 (85%)
+  • Folds: 5
+  • Parent leakage: 0 (absolute requirement)
+  • Label coverage: >98%
+  • File corruption rate: <1%
+
+QUALITATIVE
+  • All splits stratified? ✓
+  • Label ontology frozen? ✓
+  • Parent mapping errors? 0
+  • Cross-fold leakage? 0
+  • Test-dev leakage? 0
+  • Documentation complete? ✓
+
+================================================================================
+PHASE 2 READINESS CHECKLIST
+================================================================================
+
+Before starting Phase 2 (Baselines), verify:
+
+PHASE 1 OUTPUTS
+  ☐ manifests/master_manifest.parquet exists
+  ☐ reports/label_ontology.json exists and frozen
+  ☐ All split CSVs created (test + 5 folds)
+  ☐ manifests/splits_v1/split_report.json exists
+
+INTEGRITY VERIFICATION
+  ☐ Audit script passed
+  ☐ Manifest integrity check passed
+  ☐ Zero-leakage verification passed (3x)
+  ☐ All files exist and readable
+
+DOCUMENTATION
+  ☐ License documented
+  ☐ Dataset version recorded
+  ☐ Label ontology documented
+  ☐ Split strategy documented
+  ☐ All decisions with rationales recorded
+
+IMMUTABILITY
+  ☐ All Phase 1 outputs backed up
+  ☐ All scripts version controlled
+  ☐ Splits marked as immutable
+  ☐ Manifests read-only (chmod 444)
+
+READINESS
+  ☐ Can explain parent-image grouping
+  ☐ Can explain zero-leakage verification
+  ☐ Can regenerate Phase 1 from raw data
+  ☐ All team members understand Phase 1
+
+================================================================================
+TIMELINE AT A GLANCE
+================================================================================
+
+May 4    │ ▓ Download & verify           (Day 1)
+May 5    │ ▓ Setup & initial audit       (Day 2)
+May 6    │ ▓ Checksums & license         (Day 3)
+May 7    │ ░ Buffer/contingency          (Day 4)
+May 8    │ ░ Buffer/contingency          (Day 5)
+─────────┼──────────────────────────────
+May 11   │ ▓ Extract metadata            (Day 6)
+May 12   │ ▓ FREEZE label ontology       (Day 7) ← CRITICAL
+May 13   │ ▓ Build master manifest       (Day 8)
+May 14   │ ▓ Integrity checks            (Day 9)
+May 15   │ ░ Buffer/contingency          (Day 10)
+─────────┼──────────────────────────────
+May 18   │ ▓ Create grouped splits       (Day 11)
+May 19   │ ▓ Verify zero leakage         (Day 12) ← CRITICAL
+May 20   │ ▓ Documentation & finalize    (Day 13)
+May 21   │ ░ Buffer/contingency          (Day 14)
+May 22   │ ░ Final verification          (Day 15)
+May 23   │ ░ Buffer/contingency          (Day 16)
+May 24   │ ░ Sign-off & Phase 2 prep     (Day 17)
+
+Legend:
+  ▓ = Critical path task
+  ░ = Buffer/contingency
+
+================================================================================
+PHASE 2 PREVIEW: What Comes Next
+================================================================================
+
+After Phase 1 (May 25), you proceed to:
+
+PHASE 2: BASELINES (May 25 - June 9)
+  ├─ Preprocessing & backbone sanity checks
+  ├─ Classical baseline implementation
+  └─ Parameter matching for fair comparison
+
+PHASE 3: HYBRID MODELS (June 10 - July 1)
+  ├─ Bottleneck & species conditioning
+  └─ VQC implementation (Ring-SE, ReUpload, Local-TTN)
+
+PHASE 4: EVALUATION (July 2-22)
+  ├─ Cross-validation & calibration
+  └─ Statistical testing
+
+PHASE 5: EXTENSIONS (July 23 - Aug 5)
+  ├─ Noise-aware & real-device
+  ├─ Edge & Green-AI
+  └─ Robustness & explainability
+
+PHASE 6: WRITING (Aug 6-31)
+  ├─ Figures & results
+  └─ Paper submission
+
+Phase 1 is the foundation. Do it right, and everything else flows smoothly.
+
+================================================================================
+GETTING HELP
+================================================================================
+
+IF YOU GET STUCK:
+
+1. Parent mapping fails?
+   → Print first 10 filenames: find data/raw -type f -name "*.jpg" | head -10
+   → Check filename format consistency
+   → Adjust regex in extract_metadata.py
+
+2. Leakage detected?
+   → STOP - This is critical
+   → Re-examine parent_leaf_id extraction
+   → Print manifests: python3 << 'EOF'
+     import pandas as pd
+     df = pd.read_parquet('manifests/master_manifest.parquet')
+     print(df[['filename', 'parent_leaf_id']].head(20))
+     EOF
+
+3. Labels not extracted?
+   → Manually examine files: ls data/raw/Original_Images/ | head -20
+   → Check if species/condition names are in filenames
+   → May need to load metadata CSV if provided
+
+4. Splits take too long?
+   → Normal - depends on file count
+   → Can take 1-2 hours on slow drives
+   → Consider using SSD if available
+
+5. Out of disk space?
+   → Need ~50 GB for raw data
+   → Manifests are small (~10 MB)
+   → Splits are CSV files (~10 MB each)
+
+================================================================================
+
+"The best time to prevent leakage was at dataset download.
+The second-best time is right now, during Phase 1.
+Do NOT skip this phase."
+
+================================================================================

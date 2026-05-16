@@ -1,0 +1,22 @@
+{
+  "species": [
+    "Aloe Vera",
+    "Azadirachta Indica",
+    "Centella Asiatica",
+    "Hibiscus Rosa Sinensis",
+    "Kalanchoe Pinnata",
+    "Mikania Micrantha",
+    "Piper Betle"
+  ],
+  "conditions": [
+    "Chlorotic",
+    "Disease",
+    "Distorted",
+    "Dried",
+    "Healthy",
+    "Insects",
+    "Mature Healthy",
+    "Mild Disease",
+    "Young Healthy"
+  ]
+}

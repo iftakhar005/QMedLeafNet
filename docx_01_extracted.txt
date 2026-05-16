@@ -1,0 +1,386 @@
+﻿A More Novel Hybrid Quantum-Classical Project for Bangladeshi Medicinal Plant Health Detection
+Executive summary
+The uploaded proposal already points in the right direction by framing a parameter-efficient hybrid quantum-classical classifier for medicinal leaf analysis. The strongest way to increase novelty, however, isnotto treat the paper as â€œCNN backbone plus one quantum head,â€ but to turn it into arigorous benchmark-and-methodology papercentered on three ideas:leakage-safe evaluation,species-conditioned health prediction, andparameter-matched quantum-versus-classical comparisons under realistic deployment constraints. That repositioning is important because the new Bangladesh medicinal-leaf dataset is unusually valuable but also unusually easy to evaluate incorrectly if the provided augmented data are allowed to leak across splits; the dataset page says the set contains1,981 unique original images,20,019 augmented images, seven medicinal plant species, multiple condition classes, and derived augmented folders generated from originals. îˆ€fileciteîˆ‚turn0file0îˆ[1]
+The most defensible central hypothesis is this:when compact, biologically meaningful leaf representations are compressed into a very small bottleneck and the health classifier is conditioned on plant species, low-depth variational quantum circuits with data re-uploading can improve macro-F1 and calibration on minority health classes relative to flat dense heads at similar trainable parameter counts, even if top-1 accuracy gains are modest. This is a better hypothesis than â€œquantum beats classical,â€ because recent benchmarking work found that, on small classical datasets, out-of-the-box classical models often outperform quantum classifiers and that removing entanglement can sometimes help rather than hurt. That benchmark result makesfairness, parameter matching, and strong classical baselinespart of the novelty, not just methodological hygiene.[2]
+The flagship revised project should therefore be framed as aspecies-conditioned, leakage-safe, noise-aware hybrid benchmark for medicinal plant health detection, with lightweight CNN backbones, multiple 4/6/8-qubit VQC heads, matched classical controls, calibration and energy reporting, and one small real-device or calibration-driven noisy-simulation study. This also differentiates your work from recent agricultural HQNN papers that report very high accuracies on rice leaves, from plant-biotechnology comparisons where classical MLPs remained highly competitive, and from the recent medicinal-plant paperMediFlora-Net, which focuses on plant identification using multimodal/quantum-assisted feature extraction rather thanBangladesh-specific medicinal plant health-condition classification under leakage-safe grouped splits.[3]
+The revised novelty claim
+The core research hypothesis
+A strong hypothesis for the paper is:
+A species-conditioned hybrid classifier that projects pretrained CNN leaf embeddings into a very small bottleneck and applies low-depth, locality-aware VQCs with repeated data encoding will outperform parameter-matched classical heads on macro-F1, minority-class recall, and calibration under grouped parent-image splits, while keeping trainable parameters and deployment bandwidth low.
+This hypothesis is grounded in four facts from the literature. First, the Bangladesh dataset mixesspecies identityandleaf conditioninformation, so auxiliary species prediction is a meaningful inductive bias rather than an artificial add-on. Second, repeated data encoding increases the expressive power of variational quantum models. Third, local observables and shallow/local circuit structure improve trainability relative to globally averaged costs. Fourth, the fair comparison question is now central in QML, because weak baselines can make hybrid models look better than they really are.[4]
+Why this is more novel than a standard hybrid head swap
+A plain â€œreplace dense classifier with VQCâ€ paper is now relatively weak. By contrast, the revised project can legitimately claim novelty on the following axes:
+Novelty axis
+What most simple HQNN papers do
+What this project should do
+Evaluation rigor
+Random image-level split; often uses pre-generated augmented data
+Parent-image grouped split; training-only augmentation after split; untouched original-only test
+Task structure
+Flat class prediction
+Joint species + health modeling, with species-conditioned health head
+Fairness
+Compare VQC to one dense baseline
+Compare to LR, linear SVM, RBF SVM, parameter-matched dense heads, small MLPs, and quantum-inspired Fourier-feature baselines
+QML design
+Single VQC template
+4/6/8 qubits; ring, chain, and local-tree entanglement; single-pass vs re-uploading encodings
+Deployment claims
+â€œEdge-friendlyâ€ by assertion
+Actual latency/energy protocol, split-inference caveats, mobile benchmarking pipeline
+Hardware realism
+Simulator only
+Noise-aware simulation plus a small calibration-matched real-device study
+The reason this matters is that the new QML benchmarking literature explicitly warns that experimental design heavily influences conclusions and that simple claims of â€œbetter than classicalâ€ are rarely robust without matched baselines and strong controls.[5]
+A paper title that signals the stronger contribution
+A higher-novelty title would be:
+Species-Conditioned, Parameter-Matched Hybrid Quantum-Classical Learning for Leakage-Safe Medicinal Plant Health Detection in Bangladesh
+If you want a more engineering-forward title:
+Leakage-Safe Benchmarking of Parameter-Efficient Hybrid Quantum-Classical Classifiers for Bangladeshi Medicinal Leaf Health Detection
+Both titles tell reviewers that the paper is about more than a fashionable quantum add-on. They foreground evaluation rigor, dataset specificity, and methodological contribution.[6]
+Model family and matched baselines
+Backbone menu
+Use a lightweight backbone family, not one heavy model only. The best primary backbone for the paper isMobileNetV3-Small, because TorchVision reports2,542,856 parametersand0.06 GFLOPS, making it clearly edge-oriented. KeepMobileNetV2as a second lightweight backbone at3,504,872 parametersand0.30 GFLOPS, andEfficientNet-B0as an accuracy-oriented lightweight backbone at5,288,548 parametersand0.39 GFLOPS. A single heavier reference such asResNet18at11,689,512 parametersand1.81 GFLOPSis useful as a sanity-check upper baseline, not as the main deployment model.[7]
+For feature dimensions, use the backbone outputsafter global average pooling and before the original classifier. For ResNet18 this is 512 dimensions because the source code definesself.fc = nn.Linear(512 * block.expansion, num_classes)andBasicBlock.expansion = 1. For MobileNetV2 it is 1280 dimensions (self.last_channel). For MobileNetV3-Small the post-feature tensor is 576 channels before its classifier MLP, and the classifierâ€™s penultimate hidden size is 1024. EfficientNet-B0 uses a 1280-dimensional last channel.[8]
+Flagship architecture
+The flagship model should be aspecies-conditioned hybrid bottleneck classifier:
+flowchart LR    A[Leaf image] --> B[Lightweight CNN backbone]    B --> C[GAP feature vector h]    C --> D[Linear bottleneck to q dimensions]    D --> E[Species auxiliary head]    E --> F[Species-conditioned FiLM modulation]    F --> G[VQC health head]    G --> H[Condition logits]    C --> I[Optional handcrafted morphology/color/texture branch]    I --> D
+The data path is:
+Image â†’ pretrained CNN backbone â†’ GAP vector
+Optional handcrafted descriptor branchusing color, texture, and shape features from the background-removed image
+Concatenate or fuse, then apply a linear bottleneck to, with
+Auxiliary species head predicts one of 7 species from
+Species probabilities modulatethrough a small FiLM-style transform
+Condition VQC predicts the health class
+This architecture is justified because the dataset explicitly contains bothspeciesandconditionmetadata, and multitask learning is a long-standing way to improve generalization when tasks are related through a shared representation.[9]
+The VQC heads to implement
+Usethree VQC families, each instantiated at4, 6, and 8 qubits.
+Head family
+Encoding
+Entanglement
+Ansatz depth
+Trainable VQC params
+Why include it
+Ring-SE
+Single-pass angle encoding
+Ring CNOT/CZ
+2 layers
+
+Standard hybrid baseline using PennyLaneStronglyEntanglingLayers
+ReUpload-Linear
+Two blocks of data re-uploading
+Linear CZ chain
+2 re-upload cycles
+
+Tests repeated encoding, which theory says increases expressivity
+Local-TTN
+Learnable scaled angle encoding
+Local tree/block entanglement
+2 shallow stages
+about
+Tests locality-biased, trainability-friendly circuits
+TheRing-SEimplementation is easy to reproduce because PennyLane documentsStronglyEntanglingLayersas using a weight tensor of shape(L, M, 3)overMwires, with default two-qubit entanglers such asCNOT, and a range hyperparameter that naturally supports ring-like patterns. Use two layers so the VQC parameter counts remain small: 24, 36, and 48 parameters for 4, 6, and 8 qubits respectively.[10]
+TheReUpload-Linearhead is the most important one scientifically. PÃ©rez-Salinas et al. showed that repeated data re-uploading is the key ingredient allowing small quantum classifiers to represent more complex decision functions, and Schuld, Sweke, and Meyer showed that repeated encoding enriches the accessible Fourier spectrum of quantum models. This makes a two-cycle re-uploading head a much better â€œnovelty carrierâ€ than a one-shot variational head.[11]
+TheLocal-TTNhead is not meant to claim superiority because of â€œquantumness.â€ Its purpose is to test the trainability hypothesis. Cerezo et al. showed that local cost functions can avoid the exponential gradient suppression associated with global costs, at least in the relevant shallow/local regime. A local, shallow, tree-structured head therefore belongs in the benchmark even if it is not the final best model.[12]
+Measurement and PyTorch integration
+For all VQCs, measure one Pauli-Z expectation per qubit and feed the resulting-vector into a linear readout for the condition logits. Use PennyLaneTorchLayerso the QNode integrates into a normal PyTorch training stack. PennyLaneâ€™s documentation explicitly supports conversion of a QNode into a TorchModule, which makes a clean, reproducible hybrid implementation straightforward.[13]
+Matched classical baselines
+Your classical controls should sit inthree buckets, not one.
+Shallow parametric baselines on the same-dimensional bottleneck
+Logistic regression
+Linear SVM
+RBF SVM
+Parameter-matched dense head
+Small nonlinear neural baselines
+Dense-Matched:
+MLP-Small:
+Quantum-inspired classical baseline
+Random Fourier Features head with fixed sinusoidal basis and learned linear readout, motivated by the fact that variational quantum models under common encodings can be viewed as partial Fourier series.[14]
+This last baseline is important. If a Fourier-feature linear model matches the VQC, then the observed gain is likely aspectral inductive-bias gain, not a specifically quantum gain. That is a publishable and intellectually honest result.[15]
+Comparison table for the primary model family
+The table below usesMobileNetV3-Smallas the primary backbone, assumes7 species classesand9 condition classesas an illustrative count based on the dataset description, and assumes afrozen backbone. Because the shared projection dominates trainable parameter count, the fairest comparison is to show bothhead-onlyandtotal trainableparameters. If the metadata CSV later shows a different condition count, recompute the final column with the exact.[16]
+Model
+Qubits or bottleneck width
+Head-only trainable params
+Total trainable params on MobileNetV3-Small
+Expected compute
+Novelty contribution
+Logistic regression
+4 / 6 / 8
+144 / 208 / 272
+2,452 / 3,670 / 4,888
+Very low
+Strong linear control
+Dense-Matched
+4 / 6 / 8
+164 / 250 / 344
+2,472 / 3,712 / 4,960
+Very low
+Best parameter-matched dense control
+MLP-Small
+4 / 6 / 8
+220 / 346 / 488
+2,528 / 3,808 / 5,104
+Low
+Nonlinear classical control
+Fourier-feature head
+4 / 6 / 8
+252 / 370 / 488
+2,560 / 3,832 / 5,104
+Low
+Tests spectral-bias explanation
+VQC Ring-SE
+4 / 6 / 8
+168 / 244 / 320
+2,476 / 3,706 / 4,936
+Low
+Standard hybrid baseline
+VQC ReUpload-Linear
+4 / 6 / 8
+160 / 232 / 304
+2,468 / 3,694 / 4,920
+Low
+Best theory-backed hybrid candidate
+VQC Local-TTN
+4 / 6 / 8
+159 / 231 / 303
+2,467 / 3,693 / 4,919
+Low
+Trainability/locality test
+ReUpload + feature fusion
+4 / 6 / 8
+addover above
+add 64 / 96 / 128
+Low
+Hybrid morphology/texture novelty
+Backbone parameter and FLOP values come from TorchVision model documentation; the VQC parameterizations come from PennyLaneâ€™s layer templates and the data-reuploading literature; total counts above are explicit illustrative calculations for the proposed head designs.[17]
+Data handling and experimental protocol
+The split policy that avoids leakage
+This section is where your paper can become much stronger than typical agricultural image papers. The dataset page states that theoriginal dataset contains entirely unique leaf samples, withone image per leaf, and that theaugmented datasetis derived from those images. That means the correct grouping unit isthe parent original image ID, not the final augmented filename. The safest protocol is therefore:
+Useonly original or background-removed original imageswhen defining groups and splits.
+Create a uniqueparent_leaf_idfor every original image.
+Assign every augmentation of that parent image to the same group.
+Generate your own augmentationsafter splitting, or if you use the datasetâ€™s augmented folder at all, only include augmentations whose parent belongs to the training fold.[1]
+Because the dataset was collected using detached leaves on relatively uniform backgrounds, it is also important to say directly that this isnot yet an in-field benchmark. Any mobile or field generalization claim must therefore be framed as a future or supplementary experiment, not as a property already demonstrated by the dataset.[18]
+Recommended split sizes
+The best default protocol is:
+Held-out grouped test set:15% of original images, about297 leaves
+Development pool:remaining 85%, about1,684 leaves
+Grouped stratified 5-fold cross-validation on the development pool:each fold roughly1,347 train / 337 validationoriginals
+This yields a stable final test set while still allowing robust model selection. If compute becomes a bottleneck, a fallback design is a single grouped70/15/15split over originals, which is approximately1,387 / 297 / 297originals. The test set should contain only parent-original leaves, never pre-generated augmentations.[19]
+Cross-validation, optimization, and augmentation
+Usegrouped stratificationwith the finest feasible label granularity. If the metadata supports enough samples per combination, stratify byspecies Ã— condition. If some combinations are too rare, stratify by condition and monitor species balance manually. Train each model withthree random seeds per foldso that every reported number has a fold variance and a seed variance.
+A practical training schedule is:
+Stage one:freeze the full backbone; train bottleneck, auxiliary species head, conditioning layer, and classifier head
+Stage two:unfreeze the last backbone stage only; continue with a lower learning rate
+Optimizer:AdamW for neural models
+Quantum initialization:use a reduced-domain initialization for trainable circuit angles rather than full, because reduced-domain initialization has been shown to improve trainability of parameterized quantum circuits.[20]
+For augmentation, use onlytrain-only online augmentation. A restrained policy is enough:
+random rotation up to about 20 degrees
+horizontal and vertical flipping
+mild brightness/contrast jitter
+small Gaussian noise
+occasional sharpening or blur
+Donotuse aggressive cutout or heavy color perturbation that can erase disease symptoms. The dataset authors already document rotation, flips, brightness/contrast changes, Gaussian noise, and sharpening as part of their augmentation pipeline, which supports using the same family of transforms online while keeping them training-only.[1]
+Preprocessing, imbalance handling, and metrics
+The dataset provides abackground-removedversion at1440 Ã— 1080, which is the right source for core experiments because it reduces spurious background cues. Resize to224 Ã— 224for the ImageNet-pretrained backbones using the normalization conventions from TorchVision. Keep aspect ratio by padding rather than center-cropping too aggressively, because leaf shape is informative.[21]
+For imbalance, use aclass-balanced samplerover condition classes and weighted cross-entropy. If species Ã— condition combinations are the final flat classes, use a capped inverse-frequency weighting so rare combinations are not ignored while extremely rare cases do not destabilize training.
+The paper should report, at minimum:
+accuracy
+macro-F1
+per-class F1
+balanced accuracy
+negative log-likelihood
+Brier score
+expected calibration error
+trainable parameter count
+total parameter count
+classical FLOPs
+quantum circuit depth, two-qubit gate count, and shot budget
+batch-1 inference latency
+training energy and inference energy proxy
+Includetemperature scalingon the validation fold for all probabilistic models, because Guo et al. found that modern neural networks are often poorly calibrated and that temperature scaling is a particularly effective post-hoc remedy.[22]
+Statistical testing and ablations
+Usepaired bootstrap confidence intervalsover the fixed test set for macro-F1 and ECE differences, and useMcNemarâ€™s testfor pairwise accuracy comparisons between the best hybrid model and the best classical baseline. Treat fold-wise p-values as secondary, because cross-validation folds are not truly independent.
+Your core ablation matrix should include:
+qubits: 4, 6, 8
+encoding: single-pass versus re-uploading
+entanglement: ring, chain, local-tree
+species conditioning: on versus off
+feature fusion: CNN only versus CNN + handcrafted descriptors
+training regime: frozen backbone versus last-stage unfreeze
+simulation mode: analytic, finite-shot, noisy simulation
+calibration: raw softmax versus temperature-scaled
+initializer: standard versus reduced-domain quantum initialization
+This ablation matrix is not optional. In this project, it is where most of the novelty lives.[2]
+flowchart TD    A[Original and background-removed images] --> B[Assign parent_leaf_id]    B --> C[Grouped stratified held-out test]    B --> D[Development pool]    D --> E[Grouped 5-fold CV]    E --> F[Train-only augmentation]    F --> G[Backbone feature extraction]    G --> H[Classical heads]    G --> I[Quantum heads]    H --> J[Validation calibration]    I --> J    J --> K[Untouched original-only test]    K --> L[Accuracy, macro-F1, ECE, params, FLOPs, latency, energy]
+Edge, Green-AI, robustness, and explainability
+What you can honestly claim about deployment
+The paper can make a credibleedge-assistedclaim, but not a strong â€œfully on-device quantum inferenceâ€ claim. ONNX Runtimeâ€™s mobile documentation emphasizes that models must fit the deviceâ€™s disk and memory constraints, while Googleâ€™s LiteRT benchmark tools provide realistic measurements for initialization time, warmup-state inference time, steady-state inference time, and memory usage on Android and iOS. These tools should be used to benchmark theclassical portionof the pipeline.[23]
+The practical deployment architecture should be framed assplit inference:
+the phone or edge device runs the lightweight CNN backbone and bottleneck
+it transmits only a tiny-dimensional bottleneck vector plus metadata
+the remote server runs either the classical shallow head, the quantum simulator, or the real QPU-backed head
+This framing is far more realistic than pretending that current mobile devices execute quantum circuits natively. It also creates a useful communications-efficiency story: transmitting4, 6, or 8 floatsis dramatically cheaper than transmitting full images, while preserving privacy better than raw-image upload.[23]
+A realistic Green-AI protocol
+For training energy, useCodeCarbonplus aGreen Algorithms-style reporting section. CodeCarbonâ€™s methodology explicitly computes energy aspower Ã— time, reads low-level counters such as RAPL when available, and falls back to TDP-based estimates when hardware counters are unavailable. That fallback can matter: CodeCarbon also assumes about50% of TDPas average CPU power in one fallback path, and recent validation work reports that such estimation tools can still err by as much as roughly40%in some settings. That means your energy section should emphasizerelative comparisonsandmeasurement caveats, not false precision.[24]
+A good reporting bundle is:
+kWh per training run
+kgCOâ‚‚e per training run
+Joules per test image
+energy-normalized macro-F1
+latency-normalized macro-F1
+The strongest Green-AI claim you can likely support is:frozen-backbone, small-bottleneck hybrid heads reduce trainable-state size and data-transfer size, and they can be benchmarked under a transparent energy protocol. Avoid stronger claims such as â€œquantum is greenerâ€ unless you have direct measurements that include queueing, transpilation, and remote-system overhead.[25]
+Noise-aware simulation and a small real-device study
+For noisy simulation, use Qiskit Aerâ€™s noise module and backend-derived calibration data. IBMâ€™s documentation states that backend properties update after calibrations and can be used to construct noise models for classical simulation, and the Qiskit Aer documentation describes backend-derivedNoiseModelconstruction and custom readout/gate noise insertion. This gives you a strong, current, reproducible way to evaluate whether the best hybrid head survives realistic noise.[26]
+A good plan is:
+train all models in ideal simulation
+evaluate the top two VQC heads under finite-shot settings such as 128, 512, and 1024 shots
+evaluate them again with a backend-derived noise model from a current public backend with at least 8 usable qubits
+run atiny real-device trialonly on the best4-qubithead and a small subset of the test set, reporting degradation rather than trying to claim hardware superiority
+Because exact statevector simulation usescomplex amplitudes, Qiskit notes that even 8-qubit statevectors are trivial in memory on normal hardware; that makes 4/6/8-qubit ablations computationally affordable. The bottleneck in real-device experiments will therefore bedevice noise, transpilation, and queue latency, not the nominal qubit count itself.[27]
+Robustness and explainability extensions
+For robustness, includeFGSMandPGDattacks. FGSM remains the canonical fast attack, and PGD remains the standard stronger first-order adversary baseline. Even if your contribution is not security-focused, this experiment is valuable because plant symptoms can be small, texture-heavy, and vulnerable to tiny perturbations.[28]
+For explainability, use two complementary families:
+Grad-CAMon the CNN backbone, because it localizes image regions important for a class decision
+Integrated Gradientsfor input attribution, because it satisfies strong attribution axioms and is simple to implement
+Quantum interpretabilitythrough input-angle saliency, parameter saliency, and Fourier-spectrum analysis of the learned encoding, motivated by the result that common variational quantum models can be analyzed as partial Fourier series whose accessible frequencies depend on data encoding.[29]
+The best novelty-boosting transfer-learning extension is to compare standard ImageNet-pretrained backbones to a frozenDINOv2feature extractor. DINOv2 explicitly argues that self-supervised visual features can act as strong general-purpose features and that simple classifiers on top of them can already perform well. If the DINOv2-plus-classical baseline is very strong, that is useful scientific context for interpreting any hybrid gain.[30]
+Expected outcomes, failure modes, and publication strategy
+What results are realistic
+The most realistic expected outcome isnota dramatic top-1 accuracy jump. A more believable and more publishable result is:
+MobileNetV3-Small and MobileNetV2 remain the strongest deployment backbones
+ReUpload-Linearbecomes the best VQC family
+the4- or 6-qubitsetting outperforms the 8-qubit setting in stability-per-cost
+species conditioning improvesmacro-F1more than raw accuracy
+the hybrid modelâ€™s best gains appear inminority-condition recallandcalibration
+strong classical controls, especially theDense-MatchedandFourier-featureheads, remain very competitive
+If that is what happens, the paper is still strong. In the current QML climate, a rigorous result showing â€œhybrid helps here, but only under matched controls and mostly in minority-class behavior or calibrationâ€ is more credible than a sweeping promise of quantum advantage.[31]
+Failure modes to anticipate early
+The main failure modes are straightforward.
+The first isno hybrid advantage at allonce the split is leakage-safe and baselines are strong. If that happens, the project can still publish as a benchmarking and negative-results paper, especially if the protocol is tighter than prior work.[5]
+The second isdataset realism. The dataset uses detached leaves on relatively uniform backgrounds; if a reviewer asks about field deployment, you must explicitly scope the main result to controlled-image health recognition and, if possible, include a small out-of-distribution background stress test.[18]
+The third isquantum trainability collapseat 8 qubits. If the 8-qubit models become unstable, do not force them into the headline figure. Report them honestly as evidence that trainability and noise, not nominal qubit count, are the limiting factors. This is aligned with the barren-plateau literature and strengthens the paper rather than weakening it.[12]
+The fourth isoverclaiming deployment. If the VQC runs on a remote simulator or QPU, call the systemedge-assistedorsplit inference, notfully on-device quantum inference. The latter formulation is not realistic today.[32]
+A publication plan that fits the projectâ€™s maturity
+Use a tiered publication plan.
+Target tier
+Suitable venue family
+What must be finished
+Workshop or short paper
+IEEE Quantum Week workshops/posters; applied QML or AI-for-agriculture workshops
+One primary backbone, 4/6-qubit VQCs, grouped leakage-safe splits, dense/LR/SVM baselines, clear negative/positive result
+Full conference-style paper
+IEEE Quantum Week main conference track or an applied ML/agri venue with strong methods expectations
+3 backbones, 4/6/8 qubits, parameter-matched controls, Fourier-feature baseline, calibration, energy/latency protocol, noisy simulation
+Journal
+Quantum Machine Intelligence,Computers and Electronics in Agriculture, orArtificial Intelligence in Agriculture
+All of the above plus stronger ablations, a small real-device study, explainability, robustness, and ideally one external validation or field-style stress test
+This mapping is sensible becauseQuantum Machine Intelligenceexplicitly positions itself at the AIâ€“quantum intersection, whileComputers and Electronics in AgricultureandArtificial Intelligence in Agricultureexplicitly scope agricultural computation and AI applications. IEEE Quantum Week similarly frames itself as a multidisciplinary venue bridging quantum science and real-world engineering.[33]
+A practical writing strategy is:
+first submission:methods-heavy workshop or conference paper emphasizing leakage-safe benchmarking and parameter matching
+journal version:extend with robustness, explainability, energy audit, and real-device/noise-aware experiments
+That sequencing lowers risk and makes the journal extension genuinely additive rather than repetitive.[34]
+Reproducibility checklist and figure plan
+What must be released
+Because the dataset is licensedCC BY 4.0, you can release a highly reproducible package with split manifests, preprocessing scripts, and training code. Even so, the cleanest release format is still to publish:
+theexact parent-image split files
+metadata cleaning scripts
+descriptor extraction scripts
+training configs for every model
+all random seeds
+exact package versions
+ONNX or TorchScript exports of classical inference segments
+real-device/noise-model scripts
+an evaluation notebook that regenerates all tables and plots
+That package makes the paper substantially stronger than many current QML application papers.[18]
+A concise reproducibility checklist
+Use this checklist in the appendix or supplementary material:
+dataset DOI, version, and downloaded date
+exact mapping from filenames toparent_leaf_id
+exact label ontology for species and condition
+confirmation that augmented siblings never cross split boundaries
+all preprocessing details
+all augmentation probabilities
+full hyperparameter grids
+model initialization rules
+optimizer, learning-rate schedule, early-stopping rule
+fold definitions and random seeds
+calibration procedure
+latency benchmark hardware and software stack
+energy-tracking method and caveats
+QPU backend name, calibration timestamp, shot count, transpilation settings
+source code commit hash
+Suggested figures and tables
+The paper will read best if it includes the following visual package:
+Item
+Purpose
+Figure: dataset and split workflow
+Makes leakage-prevention obvious
+Figure: flagship architecture
+Shows species conditioning and tiny bottleneck clearly
+Figure: accuracyâ€“macro-F1â€“ECE Pareto frontier
+Prevents overfocus on one metric
+Figure: performance versus trainable parameters
+Shows whether quantum heads are efficient or just small
+Figure: noisy-simulation and finite-shot degradation curve
+Makes hardware realism visible
+Figure: Grad-CAM / IG examples
+Shows whether disease-relevant regions are being used
+Table: backbone menu
+Total params, FLOPs, feature dims
+Table: model-family comparison
+4/6/8-qubit counts, expected compute, novelty role
+Table: main metrics
+Mean, standard deviation, calibration, latency, energy
+Table: ablations
+Encoding, entanglement, species conditioning, fusion, shots
+Table: deployment scenarios
+On-device classical, local simulator, edge-assisted remote head
+Open questions and limitations
+A few aspects remain genuinely uncertain and should be stated explicitly.
+The dataset page lists condition labels such as healthy, diseased, chlorotic, dried, distorted, insect-affected, mild disease, and growth stages such as young and mature, but theexact final condition ontology and per-class counts must be verified from the metadata CSV before you lock the final label space. Likewise, because the dataset consists of detached leaves on relatively uniform backgrounds, field generalization remains an open question. Finally, any energy claim about remote QPU inference will remain approximate unless the full stackâ€”including queueing and provider-side overheadâ€”is measured directly.[35]
+The bottom line is that thebest revised project is a rigorous, species-conditioned, leakage-safe hybrid benchmark with balanced classical controls and deployment-aware evaluation. If the quantum heads win only narrowly, that can still be a strong paper. If they do not win, the work can still make a meaningful contribution by establishing the first careful evaluation protocol for this Bangladesh medicinal-plant health dataset and clarifying exactly where hybrid quantum-classical methods do and do not help.[36]
+
+[1][4][9][16][18][19][21][35]https://data.mendeley.com/datasets/23tnz64w5m/1
+https://data.mendeley.com/datasets/23tnz64w5m/1
+[2][5][6][31][34][36]https://arxiv.org/abs/2403.07059
+https://arxiv.org/abs/2403.07059
+[3]https://scholar.its.ac.id/en/publications/hybrid-quantum-neural-network-for-rice-leaf-disease-classificatio/
+https://scholar.its.ac.id/en/publications/hybrid-quantum-neural-network-for-rice-leaf-disease-classificatio/
+[7][17]https://docs.pytorch.org/vision/main/models/generated/torchvision.models.mobilenet_v3_small.html
+https://docs.pytorch.org/vision/main/models/generated/torchvision.models.mobilenet_v3_small.html
+[8]https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
+https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
+[10]https://docs.pennylane.ai/en/v0.30.0/code/api/pennylane.StronglyEntanglingLayers.html
+https://docs.pennylane.ai/en/v0.30.0/code/api/pennylane.StronglyEntanglingLayers.html
+[11]https://quantum-journal.org/papers/q-2020-02-06-226/
+https://quantum-journal.org/papers/q-2020-02-06-226/
+[12]https://arxiv.org/abs/2001.00550
+https://arxiv.org/abs/2001.00550
+[13]https://docs.pennylane.ai/en/stable/code/api/pennylane.qnn.TorchLayer.html
+https://docs.pennylane.ai/en/stable/code/api/pennylane.qnn.TorchLayer.html
+[14][15]https://arxiv.org/abs/2008.08605
+https://arxiv.org/abs/2008.08605
+[20]https://link.aps.org/doi/10.1103/PhysRevApplied.22.054005
+https://link.aps.org/doi/10.1103/PhysRevApplied.22.054005
+[22]https://proceedings.mlr.press/v70/guo17a.html
+https://proceedings.mlr.press/v70/guo17a.html
+[23][32]https://onnxruntime.ai/docs/tutorials/mobile/
+https://onnxruntime.ai/docs/tutorials/mobile/
+[24]https://docs.codecarbon.io/latest/explanation/methodology/
+https://docs.codecarbon.io/latest/explanation/methodology/
+[25]https://arxiv.org/abs/1907.10597
+https://arxiv.org/abs/1907.10597
+[26]https://quantum.cloud.ibm.com/docs/en/guides/qpu-information
+https://quantum.cloud.ibm.com/docs/en/guides/qpu-information
+[27]https://qiskit.github.io/qiskit-aer/stubs/qiskit_aer.StatevectorSimulator.html
+https://qiskit.github.io/qiskit-aer/stubs/qiskit_aer.StatevectorSimulator.html
+[28]https://arxiv.org/abs/1412.6572
+https://arxiv.org/abs/1412.6572
+[29]https://arxiv.org/abs/1610.02391
+https://arxiv.org/abs/1610.02391
+[30]https://arxiv.org/abs/2304.07193
+https://arxiv.org/abs/2304.07193
+[33]https://link.springer.com/journal/42484/aims-and-scope
+https://link.springer.com/journal/42484/aims-and-scope
